@@ -3,6 +3,9 @@
 from flask import Flask, render_template, request, session, escape, url_for, redirect, g
 import random
 import pymysql
+
+
+
 app = Flask(__name__)
 app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97'
@@ -23,7 +26,7 @@ def closeDB(error):
 def rndFill():
 	cursor = getDBCursor()
 	for i in range (100):
-		cursor.execute("INSERT INTO users (username, password) VALUES ({0}, {0})".format(i))
+		cursor.execute("INSERT INTO users (username, password) VALUES ({0}, PASSWORD({0}))".format(i))
 	cursor.close()
 
 def registerUser(username, password, firstName="null", lastName="null", email="null", enabled=1):
@@ -34,12 +37,13 @@ def registerUser(username, password, firstName="null", lastName="null", email="n
 def chkLogin(username, password):
 	cursor = getDBCursor()
 	cursor.execute("SELECT id FROM users WHERE username=\'{0}\' AND password=PASSWORD(\'{1}\')".format(username, password))
-	print(cursor.fetchall())
+	res = cursor.fetchall() != {}
 	cursor.close()
+	return res
 
 @app.route("/")
 def hi():
-	chkLogin("User1", "Versuch")
+	print(chkLogin("User1", "Versuch"))
 	return "Hello World, how are you! Is the program waiting for changes?"
 	
 
