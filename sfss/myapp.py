@@ -1,14 +1,26 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, session, escape, url_for, redirect, g
+from flask import Flask, render_template, request, session, escape, url_for, redirect, g, abort
 import random
 import pymysql
+from flask_redis import FlaskRedis
+import time
+import json
+import mail
 
 app = Flask(__name__)
+
 app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
+	REDIS_URL = "redis://localhost:6379/0"
 )
 
+
+def getRedis():
+	if not hasattr(g, 'redis'):
+		g.redis = FlaskRedis(app)
+	return g.redis
+	
 def getDBCursor():
 	if not hasattr(g, 'db'):
 		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor)
@@ -16,7 +28,6 @@ def getDBCursor():
 
 @app.teardown_appcontext
 def closeDB(error):
-	print(error)
 	if hasattr(g, 'db'):
 		g.db.commit()
 		g.db.close()
@@ -28,23 +39,41 @@ def _registerUser(username, password, firstName="null", lastName="null", email="
 
 def chkLogin(username, password):
 	cursor = getDBCursor()
-	cursor.execute("SELECT id FROM users WHERE username = %s AND password=PASSWORD(%s)", (username, password))#TODO test!
-	res = cursor.fetchall() != {}
+	res = cursor.execute("SELECT id FROM users WHERE username = %s AND password=PASSWORD(%s)", (username, password))#TODO test!)
 	cursor.close()
-	return res
-
-
+	return res > 0#TODO Decide if == 1 better? Norm no diff
+	
+@app.route("/registerkey/<key>")
+def registerKey(key):
+	r = getRedis()
+	res = r.get(key)
+	if res:
+		res = json.loads(res.decode())
+		_registerUser(res["username"], res["password"], res["firstName"], res["lastName"], res["email"])
+		r.delete(key)
+		return "Registration Succesful"
+	else:
+		return "This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration"
+	
 @app.route("/register/", methods=['POST', 'GET'])
 def register():
 	if request.method == 'POST':
-		_registerUser(request.form["username"], request.form["password"], request.form["firstName"], request.form["lastName"], request.form["email"])
-		return "Seccess" if chkLogin(request.form["username"], request.form["password"]) else "Shit"
+		if not all([request.form["username"] , request.form["password"], request.form["firstName"], request.form["lastName"], request.form["email"]]):
+			abort(400)#TODO add fehler template
+		key = mail.sendRegisterKey(request.form["email"])
+		r = getRedis()
+		r.set(key, json.dumps({"username": request.form["username"],
+								"password": request.form["password"],
+								"firstName":request.form["firstName"],
+								"lastName": request.form["lastName"],
+								"email"		: request.form["email"]}), 600)
+		return "email was send"
 	else:
 		return render_template("register.html")
 
 @app.route("/")
 def hi():
-	print(chkLogin("User1", "Versuch"))
+	#print(chkLogin("User1", "Versuch"))
 	return "Hello World, how are you! Is the program waiting for changes?"
 
 @app.route("/notImpl/<item>")
@@ -56,8 +85,11 @@ def login():
 	if 'username' in session:
 		return redirect('/notImpl/loggedIn')
 	if request.method == 'POST':
-		session['username'] = request.form["username"]
-		return request.form["username"]
+		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
+			print(chkLogin(request.form['username'], request.form['password']))
+			session['username'] = request.form["username"]
+			return redirect("/notImpl/loggedIn")
+		return redirect("/login")#replace with correct call of render template?
 	return render_template("login.html")#, name=user)
 
 @app.route("/logout")
