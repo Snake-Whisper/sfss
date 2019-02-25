@@ -15,8 +15,7 @@
 					<dt>First Name:	<dd><input type=text name=firstName>
 					<dt>Last Name:	<dd><input type=text name=lastName>
 					<dt>email:	<dd><input type=text name=email>
-					<dd><input type=submit value=register> or 
-					<a href="{{ url_for("login")}}">login</a>
+					<dd><input type=submit value=register>
 				</dl>
 			</form>
 		</div>

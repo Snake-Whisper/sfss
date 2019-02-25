@@ -15,7 +15,7 @@
 					<dt>Passwort:
 					<dd><input type=password name=password>
 					<dd><input type=submit value=Login> or 
-					<a href="{{ url_for("register")}}">register</a>
+					<button type="submit" formmethod="post" formaction="{{ url_for("register")}}">register</button>
 				</dl>
 			</form>
 		</div>
