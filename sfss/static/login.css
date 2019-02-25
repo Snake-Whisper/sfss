@@ -7,7 +7,8 @@ dt {
 	text-align: left;
 }
 #login {
-	width: 300px;
+	width: 350px;
+	height: auto;
 	background: white;
 	margin-left: auto;
 	margin-right: auto;
@@ -24,6 +25,14 @@ dt {
 	
 }
 
+div.flash {
+	background: red;
+	border-width: 10px 30px;
+	border-style: solid;
+	border-color: red;
+	margin-bottom: 10px;
+	margin-top: 10px;
+}
 
 
 html {

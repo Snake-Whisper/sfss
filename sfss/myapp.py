@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, session, escape, url_for, redirect, g, abort
+from flask import Flask, render_template, request, session, escape, url_for, redirect, g, abort, flash, Markup
 import random
 import pymysql
 from flask_redis import FlaskRedis
 import time
 import json
 import mail
+from validate_email import validate_email
 
 app = Flask(__name__)
 
@@ -51,15 +52,32 @@ def registerKey(key):
 		res = json.loads(res.decode())
 		_registerUser(res["username"], res["password"], res["firstName"], res["lastName"], res["email"])
 		r.delete(key)
-		return "Registration Succesful"
+		return render_template("message.html", message="Registration Succesful. Redirection in 3 seconds", refresh=3, redirect=url_for("login"))
 	else:
-		return "This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration"
+		return render_template("message.html", message="This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration")
 	
 @app.route("/register/", methods=['POST', 'GET'])
 def register():
 	if request.method == 'POST':
-		if not all([request.form["username"] , request.form["password"], request.form["firstName"], request.form["lastName"], request.form["email"]]):
-			abort(400)#TODO add fehler template
+		if not all([request.form["username"] , request.form["password"], request.form["Confpassword"], request.form["firstName"], request.form["lastName"], request.form["email"]]):
+			flash("Please fill all fields")
+			return redirect("/register")
+		if request.form["password"] != request.form["Confpassword"]:
+			flash("Please check your password")
+			return redirect("/register")
+		if not validate_email(request.form["email"]):
+			flash("Please check your email address")
+			return redirect("/register")
+		
+		cursor = getDBCursor()	
+		if cursor.execute("SELECT id FROM users WHERE username = %s", (request.form["username"])) > 0:
+			flash("User allready Exists")
+			cursor.close()
+			return redirect("/register")
+		if cursor.execute("SELECT id FROM users WHERE email = %s", (request.form["email"])) > 0:
+			flash("Email allready taken")
+			cursor.close()
+			return redirect("/register")
 		key = mail.sendRegisterKey(request.form["email"])
 		r = getRedis()
 		r.set(key, json.dumps({"username": request.form["username"],
@@ -67,7 +85,8 @@ def register():
 								"firstName":request.form["firstName"],
 								"lastName": request.form["lastName"],
 								"email"		: request.form["email"]}), 600)
-		return "email was send"
+		#return render_template("register.html", email=request.form["email"])
+		return render_template("message.html", message="Successful send email with registration key to <strong>{0}</strong>. Please check your <strong>SPAM-Folder</strong> too. <br />Back to <a href='{1}'>login</a>".format(Markup(request.form["email"]), url_for('login')))
 	else:
 		return render_template("register.html")
 
@@ -89,6 +108,7 @@ def login():
 			print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
 			return redirect("/notImpl/loggedIn")
+		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
 	return render_template("login.html")#, name=user)
 

@@ -14,10 +14,14 @@
 					<dd><input type=text name=username>
 					<dt>Passwort:
 					<dd><input type=password name=password>
+					{% for message in get_flashed_messages() %}
+            		<div class=flash>{{ message }}</div>
+            		{% endfor %}
 					<dd><input type=submit value=Login> or 
 					<a href="{{ url_for("register")}}">register</a>
 				</dl>
 			</form>
+            
 		</div>
 	</body>
 </html>

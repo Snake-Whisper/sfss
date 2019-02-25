@@ -8,17 +8,25 @@
 	</head>
 	<body>
 		<div id='login'>
+			{% if email %}
+			Successful send email with registration key to <strong>{{email}}</strong> Back to <a href="{{ url_for("login")}}">login</a>.
+			{%else%}
 			<form action="{{ url_for("register")}}" method=post>
 				<dl>
 					<dt>Username:	<dd><input type=text name=username>
-					<dt>Passwort:	<dd><input type=password name=password>
+					<dt>Password:	<dd><input type=password name=password>
+					<dt>Confirm Password:<dd><input type=password name=Confpassword>
 					<dt>First Name:	<dd><input type=text name=firstName>
 					<dt>Last Name:	<dd><input type=text name=lastName>
 					<dt>email:	<dd><input type=text name=email>
+					{% for message in get_flashed_messages() %}
+            		<div class=flash>{{ message }}</div>
+            		{% endfor %}
 					<dd><input type=submit value=register> or 
 					<a href="{{ url_for("login")}}">login</a>
 				</dl>
 			</form>
+			{% endif %}
 		</div>
 	</body>
 </html>
