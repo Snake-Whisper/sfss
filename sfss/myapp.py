@@ -8,6 +8,7 @@ import time
 import json
 import mail
 from validate_email import validate_email
+from functools import wraps
 
 app = Flask(__name__)
 
@@ -16,6 +17,13 @@ app.config.update(
 	REDIS_URL = "redis://localhost:6379/0"
 )
 
+def login_required(f):
+	@wraps(f)
+	def dec_funct(*args, **kwargs):
+		if not 'username' in session:
+			return redirect("/login")
+		return f(*args, **kwargs)
+	return dec_funct
 
 def getRedis():
 	if not hasattr(g, 'redis'):
@@ -91,11 +99,10 @@ def register():
 		return render_template("register.html")
 
 @app.route("/")
-def hi():
-	#print(chkLogin("User1", "Versuch"))
-	return "Hello World, how are you! Is the program waiting for changes?"
+
 
 @app.route("/notImpl/<item>")
+@login_required
 def notImpl(item):
 	return "The requestet site or service {0} hasn't been implemented yet".format(item)
 
