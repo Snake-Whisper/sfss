@@ -1,9 +1,12 @@
 import smtplib
 import random
+import _thread
 msg = "From: <sfss@web-utils.ml>\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n%s"
 #msg = "To: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n%s"
 
 def send_mail(to, subj, mesg):
+	_thread.start_new_thread(_send_mail, (to, subj, mesg,))
+def _send_mail(to, subj, mesg):
 	server = smtplib.SMTP('smtp.web-utils.ml', 25)
 	server.connect("smtp.web-utils.ml", 587)
 	server.ehlo()

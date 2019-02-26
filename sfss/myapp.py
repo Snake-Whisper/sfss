@@ -48,7 +48,7 @@ def _registerUser(username, password, firstName="null", lastName="null", email="
 
 def chkLogin(username, password):
 	cursor = getDBCursor()
-	res = cursor.execute("SELECT id FROM users WHERE username = %s AND password=PASSWORD(%s)", (username, password))#TODO test!)
+	res = cursor.execute("SELECT id FROM users WHERE (username = %s or email = %s) AND password=PASSWORD(%s)", (username, username, password))#TODO test!)
 	cursor.close()
 	return res > 0#TODO Decide if == 1 better? Norm no diff
 	
@@ -99,8 +99,8 @@ def register():
 		return render_template("register.html")
 
 @app.route("/")
-
-
+def home():
+	return render_template("layout.html")
 @app.route("/notImpl/<item>")
 @login_required
 def notImpl(item):
