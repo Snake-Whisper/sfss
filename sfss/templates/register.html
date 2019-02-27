@@ -7,7 +7,6 @@
 		<link rel=stylesheet type=text/css href="{{ url_for('static', filename='login.css') }}">
 	</head>
 	<body>
-		<h1 id="welcome">Sign up to sfss</h1>
 		<div id='login'>
 			{% if email %}
 			Successful send email with registration key to <strong>{{email}}</strong> Back to <a href="{{ url_for("login")}}">login</a>.

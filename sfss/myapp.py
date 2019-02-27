@@ -99,6 +99,7 @@ def register():
 		return render_template("register.html")
 
 @app.route("/")
+@login_required
 def home():
 	return render_template("layout.html")
 @app.route("/notImpl/<item>")

@@ -12,12 +12,12 @@ div#login {
 	background: white;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 5%;
+	margin-top: 10%;
 	padding: 50px 10px;
 	border-width: 5px;
 	border-style: solid;
 	border-color: black;
-	border-radius: 25px;
+	border-radius: 10px;
 	text-align: center;
 	
 	/*display: inline-block;*/
