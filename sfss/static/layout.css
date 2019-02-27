@@ -7,13 +7,32 @@ dt {
 	text-align: left;
 }
 
+#header div.option {
+	height: auto;
+	margin: 0;
+	color: red;
+	border-left: solid black;
+	text-align: center;
+	padding: 50px 10px;
+}
+
+#header div.label {
+	height: auto;
+	background: transparent;
+	margin: 0 auto;
+	text-align: center;
+	padding: 50px 10px;
+	
+}
+
+
 #wrapper {
 	width: 98%;
 	height: auto;
 	background: white;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 50px;
+	margin-top: 25px;
 	border-width: 5px;
 	border-style: solid;
 	border-color: black;
@@ -31,6 +50,9 @@ dt {
 	border-bottom-width: 5px;
 	border-bottom-style: solid;
 	border-bottom-color: black;
+	display: flex;
+	flex-flow: row-reverse;
+	flex-direction: row-reverse;
 	text-align: center;
 }
 
@@ -44,8 +66,10 @@ dt {
 	border-bottom-width: 5px;
 	border-bottom-style: solid;
 	border-bottom-color: black;
-	display: flex;
+	
+	/*display: flex;
 	flex-flow: row-reverse;
+	flex-direction: row-reverse;*/
 	text-align: center;
 }
 
@@ -104,13 +128,3 @@ h1#welcome {
 	font: bold 6em arial, sans-serif;
 }
 
-div.option {
-	height: auto;
-	margin: 0;
-	color: red;
-	border: solid black;
-	text-align: center;
-	display: block;
-	text-align: right;
-	padding: 50px 10px;
-}
