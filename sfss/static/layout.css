@@ -1,5 +1,5 @@
 * {
-	margin: 5px;
+	margin: 0px;
 	padding: 0;
 }
 
@@ -7,13 +7,37 @@ dt {
 	text-align: left;
 }
 
+#workspace {
+	width: auto;
+	height: auto;
+	background: white;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 5%;
+	padding: 50px 10px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: black;
+	border-radius: 25px;
+	text-align: center;
+	background-color: red;
+	
+	display: inline-block;	
+	
+}
+
+
 #header div.option {
 	height: auto;
 	margin: 0;
 	color: red;
 	border-left: solid black;
 	text-align: center;
-	padding: 50px 10px;
+	text-decoration: none;
+	padding: 5px 10px;
+	display: inline-block;
+	float: right;
+	
 }
 
 #header div.label {
@@ -21,7 +45,8 @@ dt {
 	background: transparent;
 	margin: 0 auto;
 	text-align: center;
-	padding: 50px 10px;
+	text-decoration: none;
+	padding: 5px 10px;
 	
 }
 
@@ -50,10 +75,10 @@ dt {
 	border-bottom-width: 5px;
 	border-bottom-style: solid;
 	border-bottom-color: black;
-	display: flex;
+	/*display: flex;
 	flex-flow: row-reverse;
 	flex-direction: row-reverse;
-	text-align: center;
+	text-align: center;*/
 }
 
 #nav {
@@ -71,6 +96,21 @@ dt {
 	flex-flow: row-reverse;
 	flex-direction: row-reverse;*/
 	text-align: center;
+}
+
+#chats {
+	width: auto;
+	height: auto;
+	background: white;
+	margin-left: 10px;
+	/*margin-right: auto;*/
+	margin-top: 0;
+	border-bottom-width: 5px;
+	border-bottom-style: solid;
+	border-bottom-color: black;
+	
+	display: inline-block;
+	text-align: left;
 }
 
 #footer {
@@ -100,11 +140,13 @@ dt {
 	border-color: black;
 	border-radius: 25px;
 	text-align: center;
-	
-	/*display: inline-block;*/
+	clear: both: /*caution*/
+	display: inline-block;
 	
 	
 }
+
+
 
 div.flash {
 	background: red;
@@ -117,8 +159,9 @@ div.flash {
 
 
 html {
-	background: url("freedom.jpg") no-repeat center center fixed;
-	background-size: cover;
+	/* background: url("freedom.jpg") no-repeat center center fixed; 
+	background-size: cover;*/
+	background-color: grey;
 
 }
 
@@ -128,3 +171,13 @@ h1#welcome {
 	font: bold 6em arial, sans-serif;
 }
 
+.clearfix:after {
+	content: " ";
+	display: block;
+	clear: both;
+	font-size: 0;
+	height: 0;
+	visibility: hidden;
+}
+/*Patch for IE7*/
+*:first-child+html .clearfix {min-height: 0;}

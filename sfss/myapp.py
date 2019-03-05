@@ -16,7 +16,9 @@ app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
 	REDIS_URL = "redis://localhost:6379/0"
 )
-
+@app.route("/settings")
+def settings():
+	return redirect("/notImpl/settings")
 def login_required(f):
 	@wraps(f)
 	def dec_funct(*args, **kwargs):
@@ -98,10 +100,15 @@ def register():
 	else:
 		return render_template("register.html")
 
+@app.route("/listChats")
+@login_required
+def listChats():
+	return render_template("tmpPosts.html")
+
 @app.route("/")
 @login_required
 def home():
-	return render_template("layout.html")
+	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
 def notImpl(item):
@@ -110,12 +117,12 @@ def notImpl(item):
 @app.route("/login/", methods=["POST", "GET"])
 def login():
 	if 'username' in session:
-		return redirect('/notImpl/loggedIn')
+		return redirect('/')
 	if request.method == 'POST':
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
 			print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
-			return redirect("/notImpl/loggedIn")
+			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
 	return render_template("login.html")#, name=user)
@@ -124,9 +131,11 @@ def login():
 def logout():
 	if 'username' in session:
 		session.pop('username', None)
-		return "Logged out sucessfull"
+		#return "Logged out sucessfull"
+		return redirect("/login")
 	else:
-		return "You've been alredy logged out!"
+		#return "You've been alredy logged out!"
+		return redirect("/login")
 
 #if __name__ == "__main__":
 #	app.run(host='0.0.0.0')

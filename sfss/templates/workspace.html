@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="nav"></div>
+<div id="main">
+<iframe id="chats" src={{ url_for("listChats")}}></iframe>
+<div id="workspace">
+
+</div>
+</div>
+{% endblock %}
