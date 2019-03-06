@@ -30,11 +30,31 @@
 	border: black solid 5px;
 	background-color: grey;
 	text-align: center;
-	display: inline-block;
-	margin: 10px 15px;
+	margin: 5px 5px;
 	padding: 0;
 	height: 70px;
 	width: 70px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+#workspace #objectsBar div.objectTabActive {
+	border: green solid 5px;
+	text-align: center;
+	display: inline-block;
+	margin: 10px 15px;
+	height: 90px;
+	width:90px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+#workspace #objectsBar div.objectTab {
+	text-align: center;
+	display: inline-block;
+	margin: 10px 15px;
+	height: 90px;
+	width:90px;
 	overflow: hidden;
 	white-space: nowrap;
 }
@@ -74,10 +94,3 @@
 	
 }
 
-html {
-	/* background: url("freedom.jpg") no-repeat center center fixed; 
-	background-size: cover;*/
-	background-color: grey;
-	height: 100%;
-
-}

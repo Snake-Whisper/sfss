@@ -21,12 +21,24 @@ dt {
 	margin-bottom: 25px;
 }
 
+#preview {
+	width: 35%;
+	border: black solid 5px;
+	height: 97%;
+	display: inline-block;
+	background-color: burlywood;
+	margin-left: 60px;
+	margin-bottom: 0;
+	float: right;
+}
+
 #wrapper {
 	width: 98%;
 	height: 100%;
-	background: white;
+	background: transparent;
 	margin: 25px auto;
 	border: black solid 5px;
+	border-bottom: transparent;
 	text-align: center;
 	padding-bottom: 0;
 	
@@ -85,6 +97,7 @@ dt {
 	margin-top: 0;
 	text-align: left;
 	padding: 10px;
+	padding-right: 20px;
 	background-color: aquamarine;
 	overflow: auto;
 	white-space: nowrap;
