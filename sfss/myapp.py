@@ -125,7 +125,7 @@ def login():
 			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
-	return render_template("login.html")#, name=user)
+	return render_template("login.html")
 
 @app.route("/logout")
 def logout():
