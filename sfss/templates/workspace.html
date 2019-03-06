@@ -1,10 +1,24 @@
 {% extends "layout.html" %}
 {% block body %}
+<style>@import url("{{ url_for('static', filename='workspace.css') }}");</style>
 <div id="nav"></div>
-<div id="main">
-<iframe id="chats" src={{ url_for("listChats")}}></iframe>
-<div id="workspace">
-
-</div>
+<div id="main" class="clearfix">
+	<div id="chats">
+		<iframe style="height: 100%; width: 100%" src={{ url_for("listChats")}}></iframe>
+	</div>
+	<div id="workspace">
+		<div id="objectsBar">
+			<div class="object">file 1</div>
+			<div class="object">file 2</div>
+			<div class="object">file 3</div>
+			<div class="object">file 4</div>
+			<div class="object">file 5</div>		
+		</div>		
+		<div id="chat"><iframe style="height: 100%; width: 100%;" src="{{ url_for("listChats")}}"></iframe></div>
+		<div id="post" class="clearfix">
+			<input type="text" name="post" id="postField">
+			<button id="sendButton">>></button>
+		</div>
+	</div>
 </div>
 {% endblock %}

@@ -7,25 +7,50 @@ dt {
 	text-align: left;
 }
 
-#workspace {
-	width: auto;
-	height: auto;
+#chats {
+	width: 18%;
+	min-width: 170px;
+	max-width: 300px;
+	height: 90%;
 	background: white;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 5%;
-	padding: 50px 10px;
-	border-width: 5px;
-	border-style: solid;
-	border-color: black;
-	border-radius: 25px;
+	border: black solid 5px;
+	display: block;
+	text-align: left;
+	display: inline-block;
+	overflow: hidden;
+	margin-bottom: 25px;
+}
+
+#wrapper {
+	width: 98%;
+	height: 100%;
+	background: white;
+	margin: 25px auto;
+	border: black solid 5px;
 	text-align: center;
-	background-color: red;
-	
-	display: inline-block;	
+	padding-bottom: 0;
 	
 }
 
+#header {
+	width: auto;
+	height: auto;
+	background: blue;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 0;
+	border-bottom: black solid 5px;
+}
+
+#header div.label {
+	height: auto;
+	background: transparent;
+	margin: 0 auto;
+	text-align: center;
+	text-decoration: none;
+	padding: 5px 10px;
+	
+}
 
 #header div.option {
 	height: auto;
@@ -40,47 +65,6 @@ dt {
 	
 }
 
-#header div.label {
-	height: auto;
-	background: transparent;
-	margin: 0 auto;
-	text-align: center;
-	text-decoration: none;
-	padding: 5px 10px;
-	
-}
-
-
-#wrapper {
-	width: 98%;
-	height: auto;
-	background: white;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 25px;
-	border-width: 5px;
-	border-style: solid;
-	border-color: black;
-	text-align: center;
-	
-}
-
-#header {
-	width: auto;
-	height: auto;
-	background: blue;
-	margin-left: auto;
-	margin-right: auto;
-	margin-top: 0;
-	border-bottom-width: 5px;
-	border-bottom-style: solid;
-	border-bottom-color: black;
-	/*display: flex;
-	flex-flow: row-reverse;
-	flex-direction: row-reverse;
-	text-align: center;*/
-}
-
 #nav {
 	width: auto;
 	height: auto;
@@ -88,65 +72,24 @@ dt {
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 0;
-	border-bottom-width: 5px;
-	border-bottom-style: solid;
-	border-bottom-color: black;
-	
-	/*display: flex;
-	flex-flow: row-reverse;
-	flex-direction: row-reverse;*/
-	text-align: center;
-}
-
-#chats {
-	width: auto;
-	height: auto;
-	background: white;
-	margin-left: 10px;
-	/*margin-right: auto;*/
-	margin-top: 0;
-	border-bottom-width: 5px;
-	border-bottom-style: solid;
-	border-bottom-color: black;
-	
-	display: inline-block;
-	text-align: left;
-}
-
-#footer {
-	width: auto;
-	height: auto;
-	background: green;
-	margin-left: auto;
-	margin-right: auto;
-	margin-bottom: 0;
-	padding: 50px 10px;
-	border-top-width: 5px;
-	border-top-style: solid;
-	border-top-color: black;
+	border-bottom: black solid 5px;
 	text-align: center;
 }
 
 #main {
-	width: 95%;
-	height: auto;
+	width: auto;
+	height: 75%;
 	background: white;
 	margin-left: auto;
 	margin-right: auto;
-	margin-top: 5%;
-	padding: 50px 10px;
-	border-width: 5px;
-	border-style: solid;
-	border-color: black;
-	border-radius: 25px;
-	text-align: center;
-	clear: both: /*caution*/
-	display: inline-block;
-	
+	margin-top: 0;
+	text-align: left;
+	padding: 10px;
+	background-color: aquamarine;
+	overflow: auto;
+	white-space: nowrap;
 	
 }
-
-
 
 div.flash {
 	background: red;
@@ -157,18 +100,28 @@ div.flash {
 	margin-top: 10px;
 }
 
-
 html {
-	/* background: url("freedom.jpg") no-repeat center center fixed; 
-	background-size: cover;*/
+	background: url("freedom.jpg") no-repeat center center fixed; 
+	background-size: cover;
 	background-color: grey;
+	height: 100%;
 
 }
 
-h1#welcome {
+#footer {
+	width: auto;
+	height: auto;
+	background: green;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 0;
+	padding: 50px 10px;
+	border-bottom: black solid 5px;
 	text-align: center;
-	margin-top: 5%;
-	font: bold 6em arial, sans-serif;
+}
+
+body {
+	height: 100%;
 }
 
 .clearfix:after {
