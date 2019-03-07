@@ -1,6 +1,7 @@
 import smtplib
 import random
 import _thread
+from time import time
 msg = "From: <sfss@web-utils.ml>\r\nTo: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n%s"
 #msg = "To: %s\r\nSubject: %s\r\nMIME-Version: 1.0\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\n%s"
 
@@ -20,7 +21,7 @@ def _send_mail(to, subj, mesg):
 #TODO: chk for exploit
 
 def genKey():
-	return "".join([str(random.randint(0,10)) for i in range(22)])
+	return str(int(time()*10000000))+"".join([str(random.randint(0,10)) for i in range(10)])
 
 def sendRegisterKey(to):
 	key = genKey()
