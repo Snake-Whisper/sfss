@@ -137,5 +137,17 @@ def logout():
 		#return "You've been alredy logged out!"
 		return redirect("/login")
 
+
+@app.cli.command('initdb')
+def initdb():
+	with app.open_resource('schema.sql', mode='r') as f:
+		c = getDBCursor()
+		for query in f.read().split(";")[:-1]:
+			c.execute(query)
+		f.close() 
+		c.close()
+		g.db.commit() #manual tear down!
+		
+
 #if __name__ == "__main__":
 #	app.run(host='0.0.0.0')
