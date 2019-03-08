@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, session, escape, url_for, red
 import random
 import pymysql
 from flask_redis import FlaskRedis
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 import time
 import json
 import mail
@@ -22,7 +22,8 @@ socketio = SocketIO(app)
 
 @socketio.on('my event')
 def handle_my_custom_event(json):
-    print('received json: ' + str(json))
+	print('received json: ' + str(json['data']))
+	emit("response", json['data'], broadcast=True)
 
 
 @app.route("/settings")
@@ -43,7 +44,7 @@ def getRedis():
 	
 def getDBCursor():
 	if not hasattr(g, 'db'):
-		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor)
+		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
 	return g.db.cursor()
 
 @app.teardown_appcontext
@@ -51,6 +52,7 @@ def closeDB(error):
 	if hasattr(g, 'db'):
 		g.db.commit()
 		g.db.close()
+##################### DB section ##############################################################
 
 def _registerUser(username, password, firstName="null", lastName="null", email="null", enabled=1):
 	cursor = getDBCursor()
@@ -62,19 +64,7 @@ def chkLogin(username, password):
 	res = cursor.execute("SELECT id FROM users WHERE (username = %s or email = %s) AND password=PASSWORD(%s)", (username, username, password))#TODO test!)
 	cursor.close()
 	return res > 0#TODO Decide if == 1 better? Norm no diff
-	
-@app.route("/registerkey/<key>")
-def registerKey(key):
-	r = getRedis()
-	res = r.get(key)
-	if res:
-		res = json.loads(res.decode())
-		_registerUser(res["username"], res["password"], res["firstName"], res["lastName"], res["email"])
-		r.delete(key)
-		return render_template("message.html", message="Registration Succesful. Redirection in 3 seconds", refresh=3, redirect=url_for("login"))
-	else:
-		return render_template("message.html", message="This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration")
-	
+
 @app.route("/register/", methods=['POST', 'GET'])
 def register():
 	if request.method == 'POST':
@@ -108,6 +98,50 @@ def register():
 		return render_template("message.html", message="Successful send email with registration key to <strong>{0}</strong>. Please check your <strong>SPAM-Folder</strong> too. <br />Back to <a href='{1}'>login</a>".format(Markup(request.form["email"]), url_for('login')))
 	else:
 		return render_template("register.html")
+
+def __addChatEntry(DBdescriptor, author, chatID, content, file=""):
+	if file:
+		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, file, content) VALUES (%s, %s, %s, %s)", (author, chatID, file, content))
+	else:
+		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, content) VALUES (%s, %s, %s)", (author, chatID, content))
+
+def _addChatEntry(author, chatID, content, file=""):
+	__addChatEntrie(getDBCursor(),  author, chatID, content, file)
+	
+def __addChat(DBdescriptor, name, UID, GID, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins=""):
+	DBdescriptor.execute("INSERT INTO chats (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins) VALUES (%s, %s, %s, %s, %s, %s, %s)", (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins))
+
+def _addChat(name, UID, GID, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins=""):
+	__addChat(getDBCursor(), name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins)
+
+def _addGroup(groupname, owner, members="", admins=""):
+	__addGroup(groupname, owner, members, admins)
+
+def __addGroup(DBdescriptor, groupname, owner, members='', admins=""):
+	DBdescriptor.execute("INSERT INTO groups (groupname, owner, members, admins) VALUES (%s, %s, %s, %s)", (groupname, owner, members, admins))
+
+def _addFile(chatID, owner, url, fileNO="NULL",  position=0):
+	__addFile(getDBCursor(), fileNO, lastAuthor, chatID, position, owner, url)
+
+def __addFile(DBdescriptor, chatID, owner, url, fileNO="",  position=0):
+	if fileNO:
+		DBdescriptor.execute("INSERT INTO files (fileNO, chatID, position, owner, url) VALUES (%s, %s, %s, %s, %s)", (fileNO, chatID, position, owner, url))
+	else:
+		DBdescriptor.execute("INSERT INTO files (chatID, position, owner, url) VALUES (%s, %s, %s, %s)", (chatID, position, owner, url))
+
+#################################################################################################	
+@app.route("/registerkey/<key>")
+def registerKey(key):
+	r = getRedis()
+	res = r.get(key)
+	if res:
+		res = json.loads(res.decode())
+		_registerUser(res["username"], res["password"], res["firstName"], res["lastName"], res["email"])
+		r.delete(key)
+		return render_template("message.html", message="Registration Succesful. Redirection in 3 seconds", refresh=3, redirect=url_for("login"))
+	else:
+		return render_template("message.html", message="This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration")
+	
 
 @app.route("/listChats")
 @login_required
@@ -152,10 +186,34 @@ def initdb():
 	with app.open_resource('schema.sql', mode='r') as f:
 		c = getDBCursor()
 		for query in f.read().split(";")[:-1]:
+			print(query)
 			c.execute(query)
 		f.close() 
 		c.close()
 		g.db.commit() #manual tear down!
+
+@app.cli.command("randomFill")
+def randomFill():
+	import os #dirty
+	os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	time.sleep(2)
+	c = getDBCursor()
+	with app.open_resource('schema.sql', mode='r') as f:		
+		for query in f.read().split(";")[:-1]:
+			print(query)
+			c.execute(query)
+		f.close() 
+	_registerUser("b", "b", email="verf@web-utils.ml")
+	for i in range(100):
+		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
+	__addGroup(c, "TestGruppe", owner=1, members='test1,test2,test3', admins="test1,test3")
+	__addChat(c, "Chat1", 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
+	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
+	
+	for i in range(100):
+		__addChatEntry(c, 1, 1, "test"+str(i)) #DBdescriptor, author, chatID, content, file="NULL"
+	c.close()
+	g.db.commit() #manual tear down!
 		
 
 if __name__ == "__main__":
