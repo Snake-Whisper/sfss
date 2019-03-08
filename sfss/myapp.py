@@ -4,6 +4,7 @@ from flask import Flask, render_template, request, session, escape, url_for, red
 import random
 import pymysql
 from flask_redis import FlaskRedis
+from flask_socketio import SocketIO
 import time
 import json
 import mail
@@ -16,6 +17,14 @@ app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
 	REDIS_URL = "redis://localhost:6379/0"
 )
+socketio = SocketIO(app)
+#socketio = SocketIO(app, message_queue="redis://")
+
+@socketio.on('my event')
+def handle_my_custom_event(json):
+    print('received json: ' + str(json))
+
+
 @app.route("/settings")
 def settings():
 	return redirect("/notImpl/settings")
@@ -149,5 +158,6 @@ def initdb():
 		g.db.commit() #manual tear down!
 		
 
-#if __name__ == "__main__":
+if __name__ == "__main__":
+	socketio.run(app)
 #	app.run(host='0.0.0.0')
