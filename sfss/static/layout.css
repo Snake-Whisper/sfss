@@ -27,9 +27,9 @@ dt {
 	height: 97%;
 	display: inline-block;
 	background-color: burlywood;
-	margin-left: 1%;
+	margin-left: 10px;
 	margin-bottom: 0;
-	float: right;
+	overflow-x: hidden;
 }
 
 #wrapper {
@@ -41,6 +41,8 @@ dt {
 	border-bottom: transparent;
 	text-align: center;
 	padding-bottom: 0;
+	white-space: nowrap;
+	overflow: auto;
 	
 }
 
@@ -99,7 +101,7 @@ dt {
 	padding: 10px;
 	padding-right: 20px;
 	background-color: aquamarine;
-	overflow: auto;
+	overflow-x: auto;
 	white-space: nowrap;
 	
 }
@@ -132,6 +134,12 @@ html {
 	border-bottom: black solid 5px;
 	text-align: center;
 }
+
+/*.avoidWrap {
+	display: inline-block;
+	white-space: nowrap;
+	overflow-x: hidden;
+}*/
 
 body {
 	height: 100%;
