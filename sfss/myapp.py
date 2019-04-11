@@ -10,6 +10,9 @@ import json
 import mail
 from validate_email import validate_email
 from functools import wraps
+import cgitb
+
+cgitb.enable()
 
 app = Flask(__name__)
 
@@ -29,10 +32,19 @@ def handle_my_custom_event(json):
 @app.route("/settings")
 def settings():
 	return redirect("/notImpl/settings")
+
+def chkID():
+	if not 'authID' in session:
+		return False
+	if getRedis().get(session['authID']).decode() != session["username"]:
+		session.pop("authID")
+		return False
+	return True
+
 def login_required(f):
 	@wraps(f)
 	def dec_funct(*args, **kwargs):
-		if not 'username' in session:
+		if not 'username' in session or not chkID():
 			return redirect("/login")
 		return f(*args, **kwargs)
 	return dec_funct
@@ -45,6 +57,7 @@ def getRedis():
 def getDBCursor():
 	if not hasattr(g, 'db'):
 		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
+		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
 	return g.db.cursor()
 
 @app.teardown_appcontext
@@ -52,6 +65,7 @@ def closeDB(error):
 	if hasattr(g, 'db'):
 		g.db.commit()
 		g.db.close()
+		
 ##################### DB section ##############################################################
 
 def _registerUser(username, password, firstName="null", lastName="null", email="null", enabled=1):
@@ -129,7 +143,12 @@ def __addFile(DBdescriptor, chatID, owner, url, fileNO="",  position=0):
 	else:
 		DBdescriptor.execute("INSERT INTO files (chatID, position, owner, url) VALUES (%s, %s, %s, %s)", (chatID, position, owner, url))
 
-#################################################################################################	
+########################################## getter ###############################################
+
+def _getChats(user):
+	return getDBCursor.execute("SELECT *").fetchall() #complete!!!
+
+#################################################################################################
 @app.route("/registerkey/<key>")
 def registerKey(key):
 	r = getRedis()
@@ -155,16 +174,19 @@ def home():
 @app.route("/notImpl/<item>")
 @login_required
 def notImpl(item):
-	return "The requestet site or service {0} hasn't been implemented yet".format(item)
+	return "The requestet site or service {0} hasn't been implemented yet. So it's time to do it. You know?".format(item)
 
 @app.route("/login/", methods=["POST", "GET"])
 def login():
-	if 'username' in session:
+	if 'username' in session and "authID" in session:
 		return redirect('/')
 	if request.method == 'POST':
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
-			print(chkLogin(request.form['username'], request.form['password']))
+			#print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
+			key = mail.genKey()
+			getRedis().set(key, session["username"])
+			session["authID"] = key
 			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
@@ -204,17 +226,20 @@ def randomFill():
 			c.execute(query)
 		f.close() 
 	_registerUser("b", "b", email="verf@web-utils.ml")
-	for i in range(100):
+	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
-	__addGroup(c, "TestGruppe", owner=1, members='test1,test2,test3', admins="test1,test3")
-	__addChat(c, "Chat1", 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
-	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
+		__addGroup(c, "TestGruppe"+str(i), owner=i, members='test1,test2,test3', admins="test1,test3")
+		__addChat(c, "Chat"+str(i), 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
 	
-	for i in range(100):
-		__addChatEntry(c, 1, 1, "test"+str(i)) #DBdescriptor, author, chatID, content, file="NULL"
+	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
 	c.close()
 	g.db.commit() #manual tear down!
-		
+	c = getDBCursor()
+	for i in range(20):
+		for y in range(20):
+			__addChatEntry(c, random.randint(1,19), random.randint(1,19), "test"+str(y)) #DBdescriptor, author, chatID, content, file="NULL"
+	c.close()
+	g.db.commit()
 
 if __name__ == "__main__":
 	socketio.run(app)
