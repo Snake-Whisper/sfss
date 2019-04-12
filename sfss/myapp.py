@@ -153,12 +153,6 @@ def query(query, param = ()):
 	cursor.execute(query, param)
 	return cursor.fetchall()
 
-def _getChats(userID):
-	return query("SELECT name FROM chats WHERE UID = %s", (userID,))#complete!!!
-
-def getOwnChats():
-	return _getChats(session["userID"])
-
 def _getUser(user):
 	cursor = getDBCursor()
 	cursor.execute("SELECT id from users where username = %s", (user,))
@@ -166,6 +160,13 @@ def _getUser(user):
 
 def getOwnUser():
 	return _getUser(session["username"])
+
+def _getChats(userID):
+	return query("SELECT name FROM chats WHERE UID = %s", (userID,))#complete!!!
+
+def getOwnChats():
+	return _getChats(session["userID"])
+
 
 #################################################################################################
 @app.route("/registerkey/<key>")
@@ -202,14 +203,12 @@ def login():
 		return redirect('/')
 	if request.method == 'POST':
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
-			#print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
 			userid = getOwnUser()
 			session['userID'] = str(userid)
 			key = mail.genKey()
 			getRedis().set(key, userid, app.config["AUTO_LOGOUT"])
 			session["authID"] = key
-			#print(session["username"], session["userID"], session["authID"])
 			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
