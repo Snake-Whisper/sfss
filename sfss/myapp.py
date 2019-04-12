@@ -76,12 +76,6 @@ def _registerUser(username, password, firstName="null", lastName="null", email="
 	cursor.execute("INSERT INTO users (username, password, firstName, lastName, email, enabled) VALUES (%s, PASSWORD(%s), %s, %s, %s, %s)", (username, password, firstName, lastName, email, enabled)) #TODO test!
 	cursor.close()
 
-def chkLogin(username, password):
-	cursor = getDBCursor()
-	res = cursor.execute("SELECT id FROM users WHERE (username = %s or email = %s) AND password=PASSWORD(%s)", (username, username, password))#TODO test!)
-	cursor.close()
-	return res > 0#TODO Decide if == 1 better? Norm no diff
-
 @app.route("/register/", methods=['POST', 'GET'])
 def register():
 	if request.method == 'POST':
@@ -115,6 +109,23 @@ def register():
 		return render_template("message.html", message="Successful send email with registration key to <strong>{0}</strong>. Please check your <strong>SPAM-Folder</strong> too. <br />Back to <a href='{1}'>login</a>".format(Markup(request.form["email"]), url_for('login')))
 	else:
 		return render_template("register.html")
+
+####################################### checker #####################################################################
+
+def chkLogin(username, password):
+	cursor = getDBCursor()
+	res = cursor.execute("SELECT id FROM users WHERE (username = %s or email = %s) AND password=PASSWORD(%s)", (username, username, password))#TODO test!)
+	cursor.close()
+	return res > 0#TODO Decide if == 1 better? Norm no diff
+
+def chkInGrp(grpID):
+	return 0 != query("SELECT FIND_IN_SET (%s, (SELECT members FROM groups WHERE id = %s))", (session["username"], grpID))[0].popitem()[1]
+	
+
+def chkChatAccess(ChatID):
+	query("")#TODO: complete
+
+############################################### adder ###############################################################
 
 def __addChatEntry(DBdescriptor, author, chatID, content, file=""):
 	if file:
@@ -213,6 +224,7 @@ def listChatEntries(id):
 @app.route("/")
 @login_required
 def home():
+	chkInGrp(1)
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
