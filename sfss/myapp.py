@@ -158,8 +158,11 @@ def _getUser(user):
 	cursor.execute("SELECT id from users where username = %s or email = %s", (user, user,))
 	return cursor.fetchall()[0]["id"]
 
-def getOwnUser():
+def getOwnUserID():
 	return _getUser(session["username"])
+
+def getUsername(username):
+	return query("SELECT username FROM users WHERE username = %s OR email = %s", (username, username,))[0]["username"]
 
 def _getChats(userID):
 	return query("SELECT name FROM chats WHERE UID = %s", (userID,))
@@ -170,6 +173,7 @@ def getOwnChats():
 def getChatEntries(chatID):
 	#return query("select author, ctime, file, content from chatEntries where ChatID = %s", (chatID,))
 	return query("SELECT users.username, chatEntries.ctime, chatEntries.file, chatEntries.content FROM chatEntries INNER JOIN users ON chatEntries.author=users.id WHERE chatEntries.ChatID = %s", (chatID,))
+
 
 
 ################################ filter ##########################################################
@@ -221,8 +225,8 @@ def login():
 		return redirect('/')
 	if request.method == 'POST':
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
-			session['username'] = request.form["username"]
-			userid = getOwnUser()
+			session['username'] = getUsername(request.form['username'])
+			userid = getOwnUserID()
 			session['userID'] = str(userid)
 			key = mail.genKey()
 			getRedis().set(key, userid, app.config["AUTO_LOGOUT"])

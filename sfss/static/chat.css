@@ -5,25 +5,114 @@ div.chat {
 	border: solid black;
 }
 
-div.post {
+div.foreignPost {
 	background-color: yellow;
-	padding: 5px 10px;
+	padding: 2px 10px;
+	padding-bottom: 2px;
 	margin: 10px 0;
-	border: solid black;
+	/*border: solid black;*/
+	border: transparent;
+	border-top-width: 0;
+	width: auto;
+	margin-left: 30px;
+}
+
+div.selfPost {
+	background-color: blue;
+	padding: 2px 10px;
+	padding-bottom: 2px;
+	margin: 10px 0;
+	/*border: solid black;*/
+	border: transparent;
+	border-top-width: 0;
+	width: auto;
+	margin-right: 30px;
 }
 
 div.head {
 	padding: 0;
 	margin: 0;
+	font-size: 0.8em;
+	font-variant: small-caps;
+	font-weight: bolder;
+	font-style: oblique;
+	margin-bottom: 2px;
 }
 
 div.content {
-	margin-left: 5px;
+	margin-left: 10px;
+	font-size: 18px;
 }
 
 div.foot {
-	align-content: right;
+	text-align: right;
+	font-style: italic;
+	font-size: 0.7em;
+	padding-bottom: 0;
+	margin-bottom: 0;
 }
 
+.speech-bubble-left {
+	position: relative;
+	background: blue;
+	border-radius: .4em;
+	border: solid black 5px;
+}
+
+.speech-bubble-right {
+	position: relative;
+	background: blue;
+	border-radius: .4em;
+	border: solid black 5px;
+	width: auto;
+}
+
+/*.speech-bubble:after {
+	content: '';
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 53px solid transparent;
+	border-right-color: yellow;
+	border-left: 0;
+	border-top: 0;
+	margin-top: -26.5px;
+	margin-left: -53px;
+}*/
+
+.speech-bubble-left:after { content: '';
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 27px solid transparent;
+	border-right-color: yellow;
+	border-left: 0;
+	border-top: 0;
+	margin-top: -13.5px;
+	margin-left: -27px;
+}
+
+.speech-bubble-right:after {
+	content: '';
+	position: absolute;
+	right: 0;
+	top: 50%;
+	width: 0;
+	height: 0;
+	border: 27px solid transparent;
+	border-left-color: blue;
+	border-right: 0;
+	border-bottom: 0;
+	margin-top: -13.5px;
+	margin-right: -27px;
+}
+
+
+
 div.chat:nth-child(2n) {background-color: blue;}
-div.post:nth-child(2n) {background-color: blue;}
+/*div.post:nth-child(2n) {background-color: blue;}
+div.speech-bubble:after:nth-child(2n) {background-color: blue;}*/
