@@ -154,13 +154,18 @@ def query(query, param = ()):
 	return cursor.fetchall()
 
 def _getChats(userID):
-	print(userID)
-	return [i['name'] for i in query("SELECT name FROM chats WHERE UID = %s", (userID,))] #complete!!!
+	return query("SELECT name FROM chats WHERE UID = %s", (userID,))#complete!!!
 
-def _getOwnUser():
+def getOwnChats():
+	return _getChats(session["userID"])
+
+def _getUser(user):
 	cursor = getDBCursor()
-	cursor.execute("SELECT id from users where username = %s", (session["username"]))
+	cursor.execute("SELECT id from users where username = %s", (user,))
 	return cursor.fetchall()[0]["id"]
+
+def getOwnUser():
+	return _getUser(session["username"])
 
 #################################################################################################
 @app.route("/registerkey/<key>")
@@ -179,12 +184,12 @@ def registerKey(key):
 @app.route("/listChats")
 @login_required
 def listChats():
-	return render_template("tmpPosts.html")
+	return render_template("listChats.html", entries=getOwnChats())
 
 @app.route("/")
 @login_required
 def home():
-	print(_getChats(session["userID"]))
+	
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
@@ -199,7 +204,7 @@ def login():
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
 			#print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
-			userid = _getOwnUser()
+			userid = getOwnUser()
 			session['userID'] = str(userid)
 			key = mail.genKey()
 			getRedis().set(key, userid, app.config["AUTO_LOGOUT"])
