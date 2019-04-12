@@ -1,0 +1,5 @@
+#!/bin/bash
+{
+sudo -u "pi" ps -ax | grep myapp.py | awk '{print $1}' | xargs kill -9 $1
+} &> /dev/null
+

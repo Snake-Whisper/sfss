@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#wakeonlan d4:be:d9:93:60:4d
+sudo -u "pi" screen -X -S sfss quit 2>/dev/null
+sudo -u "pi" screen -S sfss -dm bash -c "cd /server/python/pythonapps/sfss; source venv/bin/activate; ./sfss/myapp.py"
