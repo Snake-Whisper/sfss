@@ -155,20 +155,34 @@ def query(query, param = ()):
 
 def _getUser(user):
 	cursor = getDBCursor()
-	cursor.execute("SELECT id from users where username = %s", (user,))
+	cursor.execute("SELECT id from users where username = %s or email = %s", (user, user,))
 	return cursor.fetchall()[0]["id"]
 
 def getOwnUser():
 	return _getUser(session["username"])
 
 def _getChats(userID):
-	return query("SELECT name FROM chats WHERE UID = %s", (userID,))#complete!!!
+	return query("SELECT name FROM chats WHERE UID = %s", (userID,))
 
 def getOwnChats():
 	return _getChats(session["userID"])
 
+def getChatEntries(chatID):
+	#return query("select author, ctime, file, content from chatEntries where ChatID = %s", (chatID,))
+	return query("SELECT users.username, chatEntries.ctime, chatEntries.file, chatEntries.content FROM chatEntries INNER JOIN users ON chatEntries.author=users.id WHERE chatEntries.ChatID = %s", (chatID,))
 
-#################################################################################################
+
+################################ filter ##########################################################
+
+@app.template_filter('formatdatetime')
+def format_datetime(value, format="%d.%b.%y, %H:%M"):
+    """Format a date time"""
+    if value is None:
+        return ""
+    return value.strftime(format)
+
+##################################################################################################
+
 @app.route("/registerkey/<key>")
 def registerKey(key):
 	r = getRedis()
@@ -187,10 +201,14 @@ def registerKey(key):
 def listChats():
 	return render_template("listChats.html", entries=getOwnChats())
 
+@app.route("/listChatEntries/<id>")
+@login_required
+def listChatEntries(id):
+	return render_template("listChatEntries.html", entries=getChatEntries(id))
+
 @app.route("/")
 @login_required
 def home():
-	
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required

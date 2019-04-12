@@ -1,0 +1,18 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='chat.css') }}">
+	</head>
+	<body>
+		{% for entrie in entries %}
+		<div class="post">
+			<div class="head">{{entrie.username}}</div>
+			<div class="content">{{entrie.content}}</div>
+			<div class="foot">{{entrie.ctime|formatdatetime}}</div>
+		</div>
+		{% endfor %}
+		<a href="#head"></a>
+		<script>
+			window.scrollTo(1,document.body.scrollHeight);
+  		</script>
+	</body>
+</html>

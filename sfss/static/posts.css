@@ -1,8 +1,0 @@
-div.post {
-	background-color: yellow;
-	padding: 10px 20px;
-	margin: 10px 0;
-	border: solid black;
-}
-
-div.post:nth-child(2n) {background-color: blue;}
