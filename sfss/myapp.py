@@ -18,7 +18,8 @@ app = Flask(__name__)
 
 app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
-	REDIS_URL = "redis://localhost:6379/0"
+	REDIS_URL = "redis://localhost:6379/0",
+	AUTO_LOGOUT = 43200
 )
 socketio = SocketIO(app)
 #socketio = SocketIO(app, message_queue="redis://")
@@ -34,10 +35,12 @@ def settings():
 	return redirect("/notImpl/settings")
 
 def chkID():
-	if not 'authID' in session:
+	if not 'authID' in session or not "userID" in session:
+		logout()
 		return False
-	if getRedis().get(session['authID']).decode() != session["username"]:
-		session.pop("authID")
+	key = getRedis().get(session['authID'])
+	if not key or key.decode() != session["userID"]:
+		logout()
 		return False
 	return True
 
@@ -145,8 +148,19 @@ def __addFile(DBdescriptor, chatID, owner, url, fileNO="",  position=0):
 
 ########################################## getter ###############################################
 
-def _getChats(user):
-	return getDBCursor.execute("SELECT *").fetchall() #complete!!!
+def query(query, param = ()):
+	cursor = getDBCursor()
+	cursor.execute(query, param)
+	return cursor.fetchall()
+
+def _getChats(userID):
+	print(userID)
+	return [i['name'] for i in query("SELECT name FROM chats WHERE UID = %s", (userID,))] #complete!!!
+
+def _getOwnUser():
+	cursor = getDBCursor()
+	cursor.execute("SELECT id from users where username = %s", (session["username"]))
+	return cursor.fetchall()[0]["id"]
 
 #################################################################################################
 @app.route("/registerkey/<key>")
@@ -170,6 +184,7 @@ def listChats():
 @app.route("/")
 @login_required
 def home():
+	print(_getChats(session["userID"]))
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
@@ -184,9 +199,12 @@ def login():
 		if all([request.form['username'], request.form['password']]) and chkLogin(request.form['username'], request.form['password']):
 			#print(chkLogin(request.form['username'], request.form['password']))
 			session['username'] = request.form["username"]
+			userid = _getOwnUser()
+			session['userID'] = str(userid)
 			key = mail.genKey()
-			getRedis().set(key, session["username"])
+			getRedis().set(key, userid, app.config["AUTO_LOGOUT"])
 			session["authID"] = key
+			#print(session["username"], session["userID"], session["authID"])
 			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
@@ -194,12 +212,11 @@ def login():
 
 @app.route("/logout")
 def logout():
-	if 'username' in session:
+	if 'username' in session or 'authID' in session:
 		session.pop('username', None)
-		#return "Logged out sucessfull"
+		getRedis().delete(session.pop('authID', ""))
 		return redirect("/login")
 	else:
-		#return "You've been alredy logged out!"
 		return redirect("/login")
 
 
