@@ -1,11 +1,12 @@
 #!/bin/bash
 
-#wakeonlan d4:be:d9:93:60:4d
 {
+wakeonlan d4:be:d9:93:60:4d
 sudo -u "pi" ps -ax | grep myapp.py | awk '{print $1}' | xargs kill -9 $1
 } &> /dev/null
 
 cd /server/python/pythonapps/sfss
+autoreload sfss ./sfssstop &
 source venv/bin/activate
 while true; do
 ./sfss/myapp.py;
