@@ -5,7 +5,7 @@
 	</head>
 	<body>
 		{% for entrie in entries %}
-		<div class="chat" onclick="parent.document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = entrie.id)}}'"> {{entrie.name}} </div>
+		<div class="chat" onclick="parent.document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = entrie.id)}}'; parent.window.activeChat={{entrie.id}}"> {{entrie.name}} </div>
 		{% endfor %}
 		
 	</body>

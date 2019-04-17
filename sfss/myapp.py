@@ -224,9 +224,6 @@ def listChats():
 @app.route("/listChatEntries/<id>")
 @login_required
 def listChatEntries(id):
-	print(id)
-	print(chkChatAccess(id))
-	print(chkChatAccess(1))
 	if chkChatAccess(id):
 		return render_template("listChatEntries.html", entries=getChatEntries(id))
 	else:

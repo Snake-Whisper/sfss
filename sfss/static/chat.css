@@ -59,6 +59,7 @@ div.foot {
 	background: blue;
 	border-radius: .4em;
 	border: solid black 5px;
+	width: auto;
 }
 
 .speech-bubble-right {
@@ -68,21 +69,6 @@ div.foot {
 	border: solid black 5px;
 	width: auto;
 }
-
-/*.speech-bubble:after {
-	content: '';
-	position: absolute;
-	left: 0;
-	top: 50%;
-	width: 0;
-	height: 0;
-	border: 53px solid transparent;
-	border-right-color: yellow;
-	border-left: 0;
-	border-top: 0;
-	margin-top: -26.5px;
-	margin-left: -53px;
-}*/
 
 .speech-bubble-left:after { content: '';
 	position: absolute;
@@ -116,5 +102,3 @@ div.foot {
 
 
 div.chat:nth-child(2n) {background-color: blue;}
-/*div.post:nth-child(2n) {background-color: blue;}
-div.speech-bubble:after:nth-child(2n) {background-color: blue;}*/
