@@ -5,13 +5,13 @@
 	<body>
 		{% for entrie in entries %}
 		{% if session.username == entrie.username %}
-		<div class="selfPost speech-bubble-right">
+		<div class="selfPost speech-bubble-right" style="margin-left: 30px;">
 			<div class="head">{{entrie.username}}</div>
 			<div class="content">{{entrie.content}}</div>
 			<div class="foot">{{entrie.ctime|formatdatetime}}</div>
 		</div>
 		{% else %}
-		<div class="foreignPost speech-bubble-left">
+		<div class="foreignPost speech-bubble-left" style="margin-right: 30px;">
 			<div class="head">{{entrie.username}}</div>
 			<div class="content">{{entrie.content}} {{session.username}}</div>
 			<div class="foot">{{entrie.ctime|formatdatetime}}</div>
