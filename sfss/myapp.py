@@ -119,11 +119,15 @@ def chkLogin(username, password):
 	return res > 0#TODO Decide if == 1 better? Norm no diff
 
 def chkInGrp(grpID):
-	return 0 != query("SELECT FIND_IN_SET (%s, (SELECT members FROM groups WHERE id = %s))", (session["username"], grpID))[0].popitem()[1]
+	return 0 != query("SELECT FIND_IN_SET (%s, (SELECT members FROM groups WHERE id = %s))", (session["userID"], grpID))[0].popitem()[1]
 	
 
-def chkChatAccess(ChatID):
-	query("")#TODO: complete
+def chkChatAccess(chatID):
+	try:
+		return chatID == query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))",
+		  (chatID, session["userID"], session["userID"],))[0]['id']
+	except:
+		return False
 
 ############################################### adder ###############################################################
 
@@ -224,7 +228,8 @@ def listChatEntries(id):
 @app.route("/")
 @login_required
 def home():
-	chkInGrp(1)
+	#print(chkInGrp(1))
+	print(chkChatAccess(1))
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
@@ -283,7 +288,7 @@ def randomFill():
 	_registerUser("b", "b", email="verf@web-utils.ml")
 	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
-		__addGroup(c, "TestGruppe"+str(i), owner=i, members='test1,test2,test3', admins="test1,test3")
+		__addGroup(c, "TestGruppe"+str(i), owner=i, members='3,4,5', admins="3,4")
 		__addChat(c, "Chat"+str(i), 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
 	
 	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
