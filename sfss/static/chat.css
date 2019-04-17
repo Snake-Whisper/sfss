@@ -3,6 +3,7 @@ div.chat {
 	padding: 10px 20px;
 	margin: 10px 0;
 	border: solid black;
+	cursor: pointer;
 }
 
 div.foreignPost {

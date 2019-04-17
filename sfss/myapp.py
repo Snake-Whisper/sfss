@@ -118,14 +118,15 @@ def chkLogin(username, password):
 	cursor.close()
 	return res > 0#TODO Decide if == 1 better? Norm no diff
 
-def chkInGrp(grpID):
-	return 0 != query("SELECT FIND_IN_SET (%s, (SELECT members FROM groups WHERE id = %s))", (session["userID"], grpID))[0].popitem()[1]
+#def chkInGrp(grpID):
+#	return 0 != query("SELECT FIND_IN_SET (%s, (SELECT members FROM groups WHERE id = %s))", (session["userID"], grpID))[0].popitem()[1]
 	
 
 def chkChatAccess(chatID):
 	try:
+		chatID = int(chatID)
 		return chatID == query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))",
-		  (chatID, session["userID"], session["userID"],))[0]['id']
+		  (chatID, session["userID"], session["userID"],))[0]['id']#add int
 	except:
 		return False
 
@@ -180,7 +181,7 @@ def getUsername(username):
 	return query("SELECT username FROM users WHERE username = %s OR email = %s", (username, username,))[0]["username"]
 
 def _getChats(userID):
-	return query("SELECT name FROM chats WHERE UID = %s", (userID,))
+	return query("SELECT name, id FROM chats WHERE UID = %s", (userID,))
 
 def getOwnChats():
 	return _getChats(session["userID"])
@@ -223,13 +224,17 @@ def listChats():
 @app.route("/listChatEntries/<id>")
 @login_required
 def listChatEntries(id):
-	return render_template("listChatEntries.html", entries=getChatEntries(id))
+	print(id)
+	print(chkChatAccess(id))
+	print(chkChatAccess(1))
+	if chkChatAccess(id):
+		return render_template("listChatEntries.html", entries=getChatEntries(id))
+	else:
+		abort(403)
 
 @app.route("/")
 @login_required
 def home():
-	#print(chkInGrp(1))
-	print(chkChatAccess(1))
 	return render_template("workspace.html")
 @app.route("/notImpl/<item>")
 @login_required
