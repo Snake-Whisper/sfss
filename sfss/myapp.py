@@ -4,7 +4,8 @@ from flask import Flask, render_template, request, session, escape, url_for, red
 import random
 import pymysql
 from flask_redis import FlaskRedis
-from flask_socketio import SocketIO, emit
+import flask_socketio
+from flask_socketio import SocketIO, Namespace, emit
 import time
 import json
 import mail
@@ -24,11 +25,30 @@ app.config.update(
 socketio = SocketIO(app)
 #socketio = SocketIO(app, message_queue="redis://")
 
-@socketio.on('my event')
-def handle_my_custom_event(json):
-	print('received json: ' + str(json['data']))
-	emit("response", json['data'], broadcast=True)
+############## socket section #################################
 
+class chatNameSpace(Namespace):
+	def on_connect(self):
+		pass
+
+	def on_disconnect(self):
+		pass
+	
+	def on_sendChat(self, json):
+		print(json)
+		print (flask_socketio.rooms())
+		emit("response", json['data'], broadcast=True)
+		
+socketio.on_namespace(chatNameSpace("/chat"))
+		
+		
+#@socketio.on('sendChat')
+#def handle_my_custom_event(json):
+#	#print('received json: ' + str(json['data']))
+#	print(json)
+	
+
+##############################################################
 
 @app.route("/settings")
 def settings():
@@ -59,8 +79,8 @@ def getRedis():
 	
 def getDBCursor():
 	if not hasattr(g, 'db'):
-		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
-		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
+		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
+		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
 	return g.db.cursor()
 
 @app.teardown_appcontext
@@ -279,7 +299,8 @@ def initdb():
 @app.cli.command("randomFill")
 def randomFill():
 	import os #dirty
-	os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	#os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
 	time.sleep(2)
 	c = getDBCursor()
 	with app.open_resource('schema.sql', mode='r') as f:		

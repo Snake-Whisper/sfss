@@ -1,6 +1,6 @@
-var socket = io.connect('https://' + document.domain + ':' + location.port);
+var socket = io.connect('https://' + document.domain + ':' + location.port + "/chat");
 socket.on('connect', function() {
-	socket.emit('my event', {data: 'I\'m connected!'});
+	socket.emit('sendChat', {data: 'I\'m connected!'});
 	alert("connected");
     });
 socket.on("response", function(msg) {
@@ -8,9 +8,14 @@ socket.on("response", function(msg) {
 });
 var inputField = document.getElementById("postField");
 inputField.value = "hallo";
+
 function submitChat () {
-	alert("try to send");
-	socket.emit("my event", {data: inputField.value});
-	inputField.value = '';
-	alert("send");
+	//alert("try to send");
+	if (typeof activeChat !== 'undefined') {
+		socket.emit("sendChat", {data: inputField.value, chat: activeChat});
+		inputField.value = '';
+		alert("send");
+	} else {
+		alert("Please select a chat!")
+	};
 }
