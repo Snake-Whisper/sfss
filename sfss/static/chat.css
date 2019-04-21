@@ -10,25 +10,46 @@ div.foreignPost {
 	background-color: yellow;
 	padding: 2px 10px;
 	padding-bottom: 2px;
-	margin: 10px 0;
+	margin: 10px 30px;
 	/*border: solid black;*/
 	border: transparent;
 	border-top-width: 0;
 	width: auto;
-	margin-left: 30px;
+}
+
+div.foreignPost .head {
+	text-align: left;
+}
+
+div.foreignPost .content {
+	padding-left: 10px;
+}
+
+div.foreignPost .foot {
+	text-align: right;
 }
 
 div.selfPost {
 	background-color: blue;
 	padding: 2px 10px;
 	padding-bottom: 2px;
-	margin: 10px 0;
+	margin: 10px 30px;
 	/*border: solid black;*/
 	border: transparent;
 	border-top-width: 0;
 	width: auto;
-	margin-right: 30px;
-	margin-left: 70px;
+}
+
+div.selfPost .head {
+	text-align: right;
+}
+
+div.selfPost .content {
+	padding-right: 10px;
+}
+
+div.selfPost .foot {
+	text-align: left;
 }
 
 div.head {
@@ -60,6 +81,7 @@ div.foot {
 	border-radius: .4em;
 	border: solid black 5px;
 	width: auto;
+	text-align: left;
 }
 
 .speech-bubble-right {
@@ -68,6 +90,7 @@ div.foot {
 	border-radius: .4em;
 	border: solid black 5px;
 	width: auto;
+	text-align: right;
 }
 
 .speech-bubble-left:after { content: '';

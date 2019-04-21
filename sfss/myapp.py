@@ -254,7 +254,7 @@ def listChatEntries(id):
 @app.route("/")
 @login_required
 def home():
-	return render_template("workspace.html", chats=getOwnChats())
+	return render_template("workspace.html", chats=getOwnChats(), chatEntries=getChatEntries(1))
 @app.route("/notImpl/<item>")
 @login_required
 def notImpl(item):
