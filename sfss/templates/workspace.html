@@ -1,10 +1,32 @@
 {% extends "layout.html" %}
 {% block body %}
 <style>@import url("{{ url_for('static', filename='workspace.css') }}");</style>
+<style>@import url("{{ url_for('static', filename='chat.css') }}");</style>
 <div id="nav"></div>
 <div id="main" class="clearfix">
 	<div id="chats">
-		<iframe style="height: 100%; width: 100%" src={{ url_for("listChats")}}></iframe>
+<!--		<iframe style="height: 100%; width: 100%" src={{ url_for("listChats")}}></iframe>-->
+<!--
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
+-->
+		{% for chat in chats %}
+		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = chat.id)}}'; window.activeChat={{chat.id}}"> {{chat.name}} </div>
+		{% endfor %}
 	</div>
 	
 	<div id="workspace">

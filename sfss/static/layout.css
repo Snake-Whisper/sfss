@@ -17,7 +17,7 @@ dt {
 	display: block;
 	text-align: left;
 	display: inline-block;
-	overflow: hidden;
+	overflow: hidden auto;
 	margin-bottom: 25px;
 }
 
