@@ -5,7 +5,7 @@ import random
 import pymysql
 from flask_redis import FlaskRedis
 import flask_socketio
-from flask_socketio import SocketIO, Namespace, emit
+from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, rooms
 import time
 import json
 import mail
@@ -29,15 +29,16 @@ socketio = SocketIO(app)
 
 class chatNameSpace(Namespace):
 	def on_connect(self):
-		pass
+		for i in [i["id"] for i in getOwnChats()]:
+			join_room(i)
 
 	def on_disconnect(self):
 		pass
 	
 	def on_sendChat(self, json):
 		print(json)
-		print (flask_socketio.rooms())
-		emit("response", json['data'], broadcast=True)
+		chatId = json['chat'] #check for authority and available
+		emit("response", json['data'], broadcast=True, room=chatId)
 		
 socketio.on_namespace(chatNameSpace("/chat"))
 		
@@ -201,7 +202,8 @@ def getUsername(username):
 	return query("SELECT username FROM users WHERE username = %s OR email = %s", (username, username,))[0]["username"]
 
 def _getChats(userID):
-	return query("SELECT name, id FROM chats WHERE UID = %s", (userID,))
+	#return query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))"(userID, userID,))
+	return query("SELECT chats.name, chats.id FROM chats INNER JOIN groups on chats.GID = groups.id WHERE chats.UID = %s OR FIND_IN_SET(%s, groups.members)", (userID, userID,))
 
 def getOwnChats():
 	return _getChats(session["userID"])
