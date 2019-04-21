@@ -25,7 +25,7 @@
 		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = 1)}}'; parent.window.activeChat=1"> test </div>
 -->
 		{% for chat in chats %}
-		<div class="chat" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = chat.id)}}'; window.activeChat={{chat.id}}"> {{chat.name}} </div>
+		<div class="chats" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = chat.id)}}'; window.activeChat={{chat.id}}"> {{chat.name}} </div>
 		{% endfor %}
 	</div>
 	

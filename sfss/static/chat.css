@@ -1,4 +1,4 @@
-div.chat {
+div.chats {
 	background-color: yellow;
 	padding: 10px 20px;
 	margin: 10px 10px;
@@ -101,4 +101,4 @@ div.foot {
 
 
 
-div.chat:nth-child(2n) {background-color: blue;}
+div.chats:nth-child(2n) {background-color: blue;}
