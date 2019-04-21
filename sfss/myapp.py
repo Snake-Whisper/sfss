@@ -31,6 +31,8 @@ class chatNameSpace(Namespace):
 	def on_connect(self):
 		for i in [i["id"] for i in getOwnChats()]:
 			join_room(i)
+		print(session["username"])
+		emit("setup", session["username"])
 
 	def on_disconnect(self):
 		pass
