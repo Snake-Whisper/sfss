@@ -31,23 +31,28 @@ class chatNameSpace(Namespace):
 	def on_connect(self):
 		for i in [i["id"] for i in getOwnChats()]:
 			join_room(i)
-		emit("setup", session["username"])
+		emit("setupMe", session["username"])
 		emit("loadChatList", json.dumps(getOwnChats()))
 
 	def on_disconnect(self):
 		pass
 	
-	def on_sendChatEntry(self, json):
-		print(json)
-		chatId = json['chat'] #check for authority and available
-		emit("response", json['data'], broadcast=True, room=chatId)
+	def on_sendPost(self, msg):
+		print(msg)
+		#TODO: check for authority and available!		
+		packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
+				   "username" : session["username"],
+				   "content" : msg["content"],
+				   "chatId" : msg["chatId"]
+				  }]
+		_addChatEntry(session["userID"], msg["chatId"], msg["content"])
+		emit("recvPost", json.dumps(packet), room=msg["chatId"]) #disable broadcast!!!
 		
 	def on_getChat(self, msg):
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
 			
-		print(chatEntries)
 		emit("loadChat", json.dumps(chatEntries))
 		
 		
@@ -165,14 +170,16 @@ def chkChatAccess(chatID):
 
 ############################################### adder ###############################################################
 
-def __addChatEntry(DBdescriptor, author, chatID, content, file=""):
+def __addChatEntry(DBdescriptor, author, chatID, content, file="", ctime=None):
+	if not ctime:
+		ctime = time.strftime("%Y-%m-%d %H:%M:%S")
 	if file:
-		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, file, content) VALUES (%s, %s, %s, %s)", (author, chatID, file, content))
+		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, file, content, ctime) VALUES (%s, %s, %s, %s, %s)", (author, chatID, file, content, ctime))
 	else:
-		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, content) VALUES (%s, %s, %s)", (author, chatID, content))
+		DBdescriptor.execute("INSERT INTO chatEntries (author, ChatID, content, ctime) VALUES (%s, %s, %s, %s)", (author, chatID, content, ctime))
 
-def _addChatEntry(author, chatID, content, file=""):
-	__addChatEntrie(getDBCursor(),  author, chatID, content, file)
+def _addChatEntry(author, chatID, content, file="", time=None):
+	__addChatEntry(getDBCursor(),  author, chatID, content, file, time)
 	
 def __addChat(DBdescriptor, name, UID, GID, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins=""):
 	DBdescriptor.execute("INSERT INTO chats (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins) VALUES (%s, %s, %s, %s, %s, %s, %s)", (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins))
@@ -310,7 +317,7 @@ def initdb():
 		c.close()
 		g.db.commit() #manual tear down!
 
-@app.cli.command("randomFill")
+@app.cli.command("randomFill") #changed auto time!!!
 def randomFill():
 	import os #dirty
 	os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')

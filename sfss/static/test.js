@@ -5,31 +5,23 @@ socket.on('connect', function() {
 	console.log("connected");
     });
 
-socket.on("response", function(msg) {
-	alert(msg);
-});
 
-socket.on("setup", function(msg) {
-	console.log("recv me");
+socket.on("setupMe", function(msg) {
 	me = msg;
 });
 
-
-
 socket.on("loadChat", function(msg) {
-	console.log(msg);
 	clearChat();
 	var chatEnriesJson = JSON.parse(msg);	
 	for (var i = 0; i<chatEnriesJson.length; i++) {
 		addChatEntry(chatEnriesJson[i]["username"],
-					 chatEnriesJson["content"],
+					 chatEnriesJson[i]["content"],
 					 chatEnriesJson[i]["ctime"]);
 	}
 	
 });
 
 socket.on("loadChatList", function (msg) {
-	console.log(msg);
 	var chatList = JSON.parse(msg)
 	for (var i = 0; i<chatList.length; i++) {
 		addchat2List(chatList[i]["name"],
@@ -37,17 +29,47 @@ socket.on("loadChatList", function (msg) {
 	}
 });
 
+socket.on("recvPost", function(msg) {
+	console.log(msg);
+	var chatEnriesJson = JSON.parse(msg);	
+	for (var i = 0; i<chatEnriesJson.length; i++) { //I'm not lazy. Prob. there're coming multiple posts at same time XD
+		if (typeof(activeChat) !== "undefined"
+			&& chatEnriesJson[i]["chatId"] == activeChat) {			
+			addChatEntry(chatEnriesJson[i]["username"],
+						 chatEnriesJson[i]["content"],
+						 chatEnriesJson[i]["ctime"]);
+			document.getElementById("chat"+activeChat)
+		} else {
+			var chat = document.getElementById("chat"+chatEnriesJson[i]["chatId"]);
+			chat.classList.add("noticeMe")
+			chat.addEventListener("mouseover", terminateNoticeMe);
+		}
+	}
+});
+
 var inputField = document.getElementById("postField");
 inputField.value = "hallo";
 
-function submitChat () {
+function sendPost () {
 	if (typeof activeChat !== 'undefined') {
-		socket.emit("sendChatEntry", {data: inputField.value, chat: activeChat});
+		socket.emit("sendPost", {content: inputField.value, chatId: activeChat});
 		inputField.value = '';
-		alert("send");
 	} else {
 		alert("Please select a chat!")
 	};
+}
+
+function terminateNoticeMe() {
+	event.target.classList.remove("noticeMe");
+	event.target.removeEventListener("mouseover", terminateNoticeMe);
+	event.target.classList.add("notRead");
+	event.target.addEventListener("click", terminateNotRead);
+}
+
+function terminateNotRead() {
+	event.target.classList.remove("notRead");
+	event.target.removeEventListener("click", terminateNotRead);
+	
 }
 
 function getChat(chatId) {
@@ -58,7 +80,7 @@ var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 
 async function addChatEntry(username, message, ctime) {
-	while (typeof(me) === undefined) {
+	while (typeof(me) === "undefined") {
 		sleep(200);
 	}
 	var bubble = document.createElement("DIV");
@@ -79,6 +101,7 @@ async function addChatEntry(username, message, ctime) {
 	bubble.appendChild(foot);
 	
 	chatEntries.appendChild(bubble);
+	chatEntries.scrollTop = chatEntries.scrollHeight;
 }
 
 function clearChat() {
@@ -94,7 +117,8 @@ function Sleep(milliseconds) {
 function addchat2List(name, chatId) {
 	var chat = document.createElement("DIV");
 	chat.className = "chats";
-	chat.setAttribute("onclick", "getChat("+chatId+")"); //eventlistener?
+	chat.setAttribute("id", "chat"+chatId);
+	chat.setAttribute("onclick", "getChat("+chatId+"); activeChat = "+chatId+";"); //eventlistener?
 	chat.innerHTML = name;
 	chats.appendChild(chat);
 }
