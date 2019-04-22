@@ -6,9 +6,11 @@
 <div id="main" class="clearfix">
 	<div id="chats">
 <!--		<iframe style="height: 100%; width: 100%" src={{ url_for("listChats")}}></iframe>-->
+<!--
 		{% for chat in chats %}
 		<div class="chats" onclick="document.getElementById('chatFrame').src = '{{ url_for('listChatEntries', id = chat.id)}}'; window.activeChat={{chat.id}}"> {{chat.name}} </div>
 		{% endfor %}
+-->
 	</div>
 	
 	<div id="workspace">
@@ -21,6 +23,7 @@
 		</div>		
 <!--		<div id="chat"><iframe id= "chatFrame" style="height: 98%; width: 100%;" src="{{ url_for('listChatEntries', id=1)}}"></iframe></div>-->
 		<div id="chat">
+<!--
 			{% for entrie in chatEntries %}
 			{% if session.username == entrie.username %}
 			<div class="selfPost speech-bubble-right">
@@ -34,6 +37,7 @@
 				<div class="content">{{entrie.content}} {{session.username}}</div>
 				<div class="foot">{{entrie.ctime|formatdatetime}}</div>
 			</div>
+-->
 			{% endif%}
 			{% endfor %}
 		</div>

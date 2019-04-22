@@ -31,16 +31,25 @@ class chatNameSpace(Namespace):
 	def on_connect(self):
 		for i in [i["id"] for i in getOwnChats()]:
 			join_room(i)
-		print(session["username"])
 		emit("setup", session["username"])
 
 	def on_disconnect(self):
 		pass
 	
-	def on_sendChat(self, json):
+	def on_sendChatEntry(self, json):
 		print(json)
 		chatId = json['chat'] #check for authority and available
 		emit("response", json['data'], broadcast=True, room=chatId)
+		
+	def on_getChat(self, msg):
+		chatEntries = getChatEntries(msg["chatId"])
+		for i in range(len(chatEntries)):
+			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
+			
+		print(chatEntries)
+		emit("loadChat", json.dumps(chatEntries))
+		
+		
 		
 socketio.on_namespace(chatNameSpace("/chat"))
 		

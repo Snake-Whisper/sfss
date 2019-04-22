@@ -2,19 +2,38 @@ var me;
 var socket = io.connect('https://' + document.domain + ':' + location.port + "/chat");
 socket.on('connect', function() {
 	//init with clear of all?
+	console.log("connected");
     });
+
 socket.on("response", function(msg) {
 	alert(msg);
 });
+
 socket.on("setup", function(msg) {
+	console.log("recv me");
 	me = msg;
 });
+
+
+
+socket.on("loadChat", function(msg) {
+	console.log(msg);
+	clearChat();
+	var chatEnriesJson = JSON.parse(msg);	
+	for (var i = 0; i<chatEnriesJson.length; i++) {
+		addChatEntry(chatEnriesJson[i]["username"],
+					 chatEnriesJson["content"],
+					 chatEnriesJson[i]["ctime"]);
+	}
+	
+});
+
 var inputField = document.getElementById("postField");
 inputField.value = "hallo";
 
 function submitChat () {
 	if (typeof activeChat !== 'undefined') {
-		socket.emit("sendChat", {data: inputField.value, chat: activeChat});
+		socket.emit("sendChatEntry", {data: inputField.value, chat: activeChat});
 		inputField.value = '';
 		alert("send");
 	} else {
@@ -22,10 +41,14 @@ function submitChat () {
 	};
 }
 
+function getChat(chatId) {
+	socket.emit("getChat", {"chatId" : chatId});
+}
+
 var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 
-async function newChatEntry(username, message, ctime) {
+async function addChatEntry(username, message, ctime) {
 	while (typeof(me) === undefined) {
 		sleep(200);
 	}
@@ -59,9 +82,10 @@ function Sleep(milliseconds) {
  return new Promise(resolve => setTimeout(resolve, milliseconds));
 }
 
-function addchat2List(name, id) {
+function addchat2List(name, chatId) {
 	var chat = document.createElement("DIV");
 	chat.className = "chats";
+	chat.setAttribute("onclick", "getChat("+chatId+")"); //eventlistener?
 	chat.innerHTML = name;
 	chats.appendChild(chat);
 }
