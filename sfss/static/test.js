@@ -30,7 +30,6 @@ socket.on("loadChatList", function (msg) {
 });
 
 socket.on("recvPost", function(msg) {
-	console.log(msg);
 	var chatEnriesJson = JSON.parse(msg);	
 	for (var i = 0; i<chatEnriesJson.length; i++) { //I'm not lazy. Prob. there're coming multiple posts at same time XD
 		if (typeof(activeChat) !== "undefined"
@@ -38,9 +37,9 @@ socket.on("recvPost", function(msg) {
 			addChatEntry(chatEnriesJson[i]["username"],
 						 chatEnriesJson[i]["content"],
 						 chatEnriesJson[i]["ctime"]);
-			document.getElementById("chat"+activeChat)
+			document.getElementById(activeChat)
 		} else {
-			var chat = document.getElementById("chat"+chatEnriesJson[i]["chatId"]);
+			var chat = document.getElementById(chatEnriesJson[i]["chatId"]);
 			chat.classList.add("noticeMe")
 			chat.addEventListener("mouseover", terminateNoticeMe);
 		}
@@ -117,8 +116,8 @@ function Sleep(milliseconds) {
 function addchat2List(name, chatId) {
 	var chat = document.createElement("DIV");
 	chat.className = "chats";
-	chat.setAttribute("id", "chat"+chatId);
-	chat.setAttribute("onclick", "getChat("+chatId+"); activeChat = "+chatId+";"); //eventlistener?
+	chat.setAttribute("id", chatId);
+	chat.addEventListener("click", changeChat);
 	chat.innerHTML = name;
 	chats.appendChild(chat);
 }
@@ -127,4 +126,9 @@ function clearChatList() {
 	while (chats.firstChild) {
 		chats.removeChild(chats.firstChild);
 	}
+}
+
+function changeChat() {
+	getChat(event.target.id);
+	activeChat = event.target.id;
 }
