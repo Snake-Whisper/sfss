@@ -28,6 +28,15 @@ socket.on("loadChat", function(msg) {
 	
 });
 
+socket.on("loadChatList", function (msg) {
+	console.log(msg);
+	var chatList = JSON.parse(msg)
+	for (var i = 0; i<chatList.length; i++) {
+		addchat2List(chatList[i]["name"],
+					chatList[i]["id"]);
+	}
+});
+
 var inputField = document.getElementById("postField");
 inputField.value = "hallo";
 
