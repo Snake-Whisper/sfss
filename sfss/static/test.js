@@ -30,7 +30,7 @@ socket.on("loadChatList", function (msg) {
 });
 
 socket.on("recvPost", function(msg) {
-	var chatEnriesJson = JSON.parse(msg);	
+	var chatEnriesJson = JSON.parse(msg);
 	for (var i = 0; i<chatEnriesJson.length; i++) { //I'm not lazy. Prob. there're coming multiple posts at same time XD
 		if (typeof(activeChat) !== "undefined"
 			&& chatEnriesJson[i]["chatId"] == activeChat) {			

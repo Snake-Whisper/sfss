@@ -38,7 +38,6 @@ class chatNameSpace(Namespace):
 		pass
 	
 	def on_sendPost(self, msg):
-		print(msg)
 		#TODO: check for authority and available!		
 		packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
 				   "username" : session["username"],
@@ -46,7 +45,8 @@ class chatNameSpace(Namespace):
 				   "chatId" : msg["chatId"]
 				  }]
 		_addChatEntry(session["userID"], msg["chatId"], msg["content"])
-		emit("recvPost", json.dumps(packet), room=msg["chatId"]) #disable broadcast!!!
+		emit("recvPost", json.dumps(packet), room=int(msg["chatId"])) #disable broadcast!!!
+		print("packet:", packet)
 		
 	def on_getChat(self, msg):
 		chatEntries = getChatEntries(msg["chatId"])
