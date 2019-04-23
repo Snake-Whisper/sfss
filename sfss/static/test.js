@@ -72,11 +72,12 @@ function terminateNotRead() {
 }
 
 function getChat(chatId) {
-	socket.emit("getChat", {"chatId" : chatId});
+	socket.emit("cdChat", {"chatId" : chatId});
 }
 
 var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
+var objectsBar = document.getElementById("objectsBar");
 
 async function addChatEntry(username, message, ctime) {
 	while (typeof(me) === "undefined") {
@@ -131,4 +132,24 @@ function clearChatList() {
 function changeChat() {
 	getChat(event.target.id);
 	activeChat = event.target.id;
+}
+
+function clearObjectsBar() {
+	while (objectsBar.firstChild) {
+		objectsBar.removeChild(objectsBar.firstChild);
+	}
+	
+	addObjects2ObjectsBar("+", false);
+}
+
+function addObjects2ObjectsBar(content, active) {
+	var obj = document.createElement("DIV");
+	obj.className = "object";
+	obj.innerHTML = content;
+	
+	var objTab = document.createElement("DIV");
+	objTab.className = active ? "objectTab active" : "objectTab";
+	
+	objTab.appendChild(obj);
+	objectsBar.insertBefore(objTab, objectsBar.lastElementChild);
 }

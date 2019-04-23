@@ -46,14 +46,14 @@ class chatNameSpace(Namespace):
 				  }]
 		_addChatEntry(session["userID"], msg["chatId"], msg["content"])
 		emit("recvPost", json.dumps(packet), room=int(msg["chatId"])) #disable broadcast!!!
-		print("packet:", packet)
 		
-	def on_getChat(self, msg):
+	def on_cdChat(self, msg):
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
 			
 		emit("loadChat", json.dumps(chatEntries))
+		session["activeChat"] = msg["chatId"]
 		
 		
 		
@@ -231,6 +231,8 @@ def getChatEntries(chatID):
 	#return query("select author, ctime, file, content from chatEntries where ChatID = %s", (chatID,))
 	return query("SELECT users.username, chatEntries.ctime, chatEntries.file, chatEntries.content FROM chatEntries INNER JOIN users ON chatEntries.author=users.id WHERE chatEntries.ChatID = %s", (chatID,))
 
+def _getFiles(id):
+	return query("SELECT * FROM files WHERE ChatID = %s",(id,)) #TODO: Complete!!!
 
 
 ################################ filter ##########################################################
