@@ -32,7 +32,8 @@
 	text-align: center;
 	margin: 5px 5px;
 	padding: 5px 10px;
-	height: 70px;
+	height: auto;
+	max-height: 70px;
 	min-width: 70px;
 	width: auto;
 	max-width: 100px;
@@ -42,6 +43,17 @@
 	word-wrap: break-word;
 	vertical-align: middle;
 }
+
+#workspace #objectsBar #UploadBar {
+	width: 100%;
+	display: none;
+}
+
+#workspace #objectsBar #UploadBar.active {
+	width: 100%;
+	display: block;
+}
+
 
 #workspace #objectsBar div.active {
 	border: green solid 5px;

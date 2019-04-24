@@ -2,6 +2,7 @@ var me;
 var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 var objectsBar = document.getElementById("objectsBar");
+var progressBar = document.getElementById("UploadBar");
 var fileDropZone = document.getElementById("dropFile");
 var uploadQueue = [];
 var uploadSizes = [];
@@ -184,8 +185,11 @@ function uploadFiles() {
 		formDataRequest.append("file", file);
 		console.log(formDataRequest);
 		
+		xhr.upload.addEventListener("progress", function (event) {
+			console.log(event.loaded);
+		});
+		
 		xhr.open("POST", "upload", true);
-		//xhr.setRequestHeader("Content-Type","multipart/form-data");
 		xhr.send(formDataRequest);
 		
 	}
