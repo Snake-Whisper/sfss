@@ -3,8 +3,12 @@ var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 var objectsBar = document.getElementById("objectsBar");
 var fileDropZone = document.getElementById("dropFile");
+var uploadQueue = [];
+var uploadSizes = [];
+var uploadTotalProceeds = [];
 var inputField = document.getElementById("postField");
 var socket = io.connect('https://' + document.domain + ':' + location.port + "/chat");
+
 
 inputField.value = "hallo";
 
@@ -158,17 +162,31 @@ function addObjects2ObjectsBar(content, active) {
 	objectsBar.insertBefore(objTab, objectsBar.lastElementChild);
 }
 
-fileDropZone.addEventListener("drop", function (e) {
-	e.preventDefault();
-	var fr = new FileReader();
-	fr.addEventListener("loadend", function () {
-		console.log(fr.result);
-		socket.emit("uploadFile", {file : fr.result});
-	}, false);
-	for (var x=0; x < e.dataTransfer.files.length; x++) {
-		fr.readAsArrayBuffer(e.dataTransfer.files[x]);
-		//socket.emit("uploadFile", {file: fr.result, size: e.dataTransfer.files[x].size});
+fileDropZone.addEventListener("drop", function (event) {
+	event.preventDefault();
+	event.stopPropagation(); //test!
+	console.log(event.dataTransfer.files.length);
+	for (var i = 0; i < event.dataTransfer.files.length; i++) {
+		uploadQueue.push(event.dataTransfer.files[i]);
+		uploadSizes.push(event.dataTransfer.files[i].size);
 	}
-	console.log("ok");
+	uploadFiles()
 }, false);
-console.log("executed");
+
+function uploadFiles() {
+	console.log(uploadQueue.length);
+	while (uploadQueue.length) {
+		var xhr = new XMLHttpRequest();
+		
+		var formDataRequest = new FormData();
+		var file = uploadQueue.shift();
+		console.log(file);
+		formDataRequest.append("file", file);
+		console.log(formDataRequest);
+		
+		xhr.open("POST", "upload", true);
+		//xhr.setRequestHeader("Content-Type","multipart/form-data");
+		xhr.send(formDataRequest);
+		
+	}
+}

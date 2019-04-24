@@ -9,6 +9,8 @@ from flask_socketio import SocketIO, Namespace, emit, join_room, leave_room, roo
 import time
 import json
 import mail
+from werkzeug.utils import secure_filename
+import os.path
 from validate_email import validate_email
 from functools import wraps
 import cgitb
@@ -16,13 +18,14 @@ import cgitb
 cgitb.enable()
 
 app = Flask(__name__)
-
 app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
 	REDIS_URL = "redis://localhost:6379/0",
-	AUTO_LOGOUT = 43200
+	AUTO_LOGOUT = 43200,
+	MAX_CONTENT_LENGTH = 30 * 1024 * 1024
 )
 socketio = SocketIO(app)
+
 #socketio = SocketIO(app, message_queue="redis://")
 
 ############## socket section #################################
@@ -285,6 +288,23 @@ def home():
 @login_required
 def notImpl(item):
 	return "The requestet site or service {0} hasn't been implemented yet. So it's time to do it. You know?".format(item)
+
+@app.route("/upload", methods=["POST"])
+@login_required
+def upload():
+	if "file" in request.files:
+		print("ok")
+	file = request.files['file']
+	filename = secure_filename(file.filename)
+	file.save(os.path.join("/tmp", filename))
+	#print(len(request.files))
+	#print(request.form.to_dict())
+	#file = request.form["file"]
+	
+	#print(file)
+	#print(len(file))
+	print("counting ready")
+	return "ok"
 
 @app.route("/login/", methods=["POST", "GET"])
 def login():
