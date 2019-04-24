@@ -55,6 +55,11 @@ class chatNameSpace(Namespace):
 		emit("loadChat", json.dumps(chatEntries))
 		session["activeChat"] = msg["chatId"]
 		
+	def on_uploadFile(self, msg):
+		print("start revieving")
+		daten = bytearray(msg["file"])
+		print(len(daten))
+		
 		
 		
 socketio.on_namespace(chatNameSpace("/chat"))

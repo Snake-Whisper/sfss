@@ -1,5 +1,13 @@
 var me;
+var chats = document.getElementById("chats");
+var chatEntries = document.getElementById("chat");
+var objectsBar = document.getElementById("objectsBar");
+var fileDropZone = document.getElementById("dropFile");
+var inputField = document.getElementById("postField");
 var socket = io.connect('https://' + document.domain + ':' + location.port + "/chat");
+
+inputField.value = "hallo";
+
 socket.on('connect', function() {
 	//init with clear of all?
 	console.log("connected");
@@ -17,8 +25,7 @@ socket.on("loadChat", function(msg) {
 		addChatEntry(chatEnriesJson[i]["username"],
 					 chatEnriesJson[i]["content"],
 					 chatEnriesJson[i]["ctime"]);
-	}
-	
+	}	
 });
 
 socket.on("loadChatList", function (msg) {
@@ -46,9 +53,6 @@ socket.on("recvPost", function(msg) {
 	}
 });
 
-var inputField = document.getElementById("postField");
-inputField.value = "hallo";
-
 function sendPost () {
 	if (typeof activeChat !== 'undefined') {
 		socket.emit("sendPost", {content: inputField.value, chatId: activeChat});
@@ -56,6 +60,10 @@ function sendPost () {
 	} else {
 		alert("Please select a chat!")
 	};
+}
+
+function allowDrop(ev) {
+	ev.preventDefault();
 }
 
 function terminateNoticeMe() {
@@ -74,10 +82,6 @@ function terminateNotRead() {
 function getChat(chatId) {
 	socket.emit("cdChat", {"chatId" : chatId});
 }
-
-var chats = document.getElementById("chats");
-var chatEntries = document.getElementById("chat");
-var objectsBar = document.getElementById("objectsBar");
 
 async function addChatEntry(username, message, ctime) {
 	while (typeof(me) === "undefined") {
@@ -153,3 +157,18 @@ function addObjects2ObjectsBar(content, active) {
 	objTab.appendChild(obj);
 	objectsBar.insertBefore(objTab, objectsBar.lastElementChild);
 }
+
+fileDropZone.addEventListener("drop", function (e) {
+	e.preventDefault();
+	var fr = new FileReader();
+	fr.addEventListener("loadend", function () {
+		console.log(fr.result);
+		socket.emit("uploadFile", {file : fr.result});
+	}, false);
+	for (var x=0; x < e.dataTransfer.files.length; x++) {
+		fr.readAsArrayBuffer(e.dataTransfer.files[x]);
+		//socket.emit("uploadFile", {file: fr.result, size: e.dataTransfer.files[x].size});
+	}
+	console.log("ok");
+}, false);
+console.log("executed");

@@ -58,6 +58,10 @@
 	cursor: pointer;
 }
 
+#workspace #objectsBar #dropFile:hover {
+	border: dashed red;
+}
+
 #workspace #chat {
 	width: auto;
 	height: 70%;
