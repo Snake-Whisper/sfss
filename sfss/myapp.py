@@ -56,24 +56,10 @@ class chatNameSpace(Namespace):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
 			
 		emit("loadChat", json.dumps(chatEntries))
-		session["activeChat"] = msg["chatId"]
-		
-	def on_uploadFile(self, msg):
-		print("start revieving")
-		daten = bytearray(msg["file"])
-		print(len(daten))
-		
 		
 		
 socketio.on_namespace(chatNameSpace("/chat"))
 		
-		
-#@socketio.on('sendChat')
-#def handle_my_custom_event(json):
-#	#print('received json: ' + str(json['data']))
-#	print(json)
-	
-
 ##############################################################
 
 @app.route("/settings")
@@ -267,18 +253,18 @@ def registerKey(key):
 		return render_template("message.html", message="This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration")
 	
 
-@app.route("/listChats")
-@login_required
-def listChats():
-	return render_template("listChats.html", entries=getOwnChats())
-
-@app.route("/listChatEntries/<id>")
-@login_required
-def listChatEntries(id):
-	if chkChatAccess(id):
-		return render_template("listChatEntries.html", entries=getChatEntries(id))
-	else:
-		abort(403)
+#@app.route("/listChats")
+#@login_required
+#def listChats():
+#	return render_template("listChats.html", entries=getOwnChats())
+#
+#@app.route("/listChatEntries/<id>")
+#@login_required
+#def listChatEntries(id):
+#	if chkChatAccess(id):
+#		return render_template("listChatEntries.html", entries=getChatEntries(id))
+#	else:
+#		abort(403)
 
 @app.route("/")
 @login_required
@@ -292,18 +278,15 @@ def notImpl(item):
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
-	if "file" in request.files:
+	#TODO: do some security checks
+	print(type(request.form["activeChat"]))
+	if request.form["activeChat"] == '0':
+		return abort(401)
+	if "file" in request.files: #ToDO: Improve
 		print("ok")
 	file = request.files['file']
 	filename = secure_filename(file.filename)
 	file.save(os.path.join("/tmp", filename))
-	#print(len(request.files))
-	#print(request.form.to_dict())
-	#file = request.form["file"]
-	
-	#print(file)
-	#print(len(file))
-	print("counting ready")
 	return "ok"
 
 @app.route("/login/", methods=["POST", "GET"])

@@ -1,4 +1,5 @@
 var me;
+var activeChat = 0;
 var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 var objectsBar = document.getElementById("objectsBar");
@@ -35,17 +36,25 @@ socket.on("loadChat", function(msg) {
 
 socket.on("loadChatList", function (msg) {
 	clearChatList();
-	var chatList = JSON.parse(msg)
+	var chatList = JSON.parse(msg);
 	for (var i = 0; i<chatList.length; i++) {
 		addchat2List(chatList[i]["name"],
 					chatList[i]["id"]);
 	}
 });
 
+socket.on("loadObjectsBar", function (msg) {
+	clearObjectsBar();
+	var objList = JSON.parse(msg);
+	for (var i = 0; i < objList.length; i++) {
+		//addObjects2ObjectsBar()
+	}
+});
+
 socket.on("recvPost", function(msg) {
 	var chatEnriesJson = JSON.parse(msg);
 	for (var i = 0; i<chatEnriesJson.length; i++) { //I'm not lazy. Prob. there're coming multiple posts at same time XD
-		if (typeof(activeChat) !== "undefined"
+		if (activeChat != 0
 			&& chatEnriesJson[i]["chatId"] == activeChat) {			
 			addChatEntry(chatEnriesJson[i]["username"],
 						 chatEnriesJson[i]["content"],
@@ -62,7 +71,7 @@ socket.on("recvPost", function(msg) {
 
 
 function sendPost () {
-	if (typeof activeChat !== 'undefined') {
+	if (activeChat != 0) {
 		socket.emit("sendPost", {content: inputField.value, chatId: activeChat});
 		inputField.value = '';
 	} else {
@@ -187,6 +196,7 @@ function uploadFiles() {
 		var file = uploadQueue.shift();
 		console.log(file);
 		formDataRequest.append("file", file);
+		formDataRequest.append("activeChat", activeChat);
 		console.log(formDataRequest);
 		
 		progressBar.setAttribute("max", uploadSizes[counter]);
@@ -200,6 +210,14 @@ function uploadFiles() {
 			console.log("ready");
 			progressBar.classList.remove("active");
 		});
+		
+		xhr.onreadystatechange = function () {
+  			if(xhr.readyState === 4 && xhr.status === 200) {
+				console.log(xhr.responseText);
+			} else if (xhr.readyState === 2 && xhr.status === 401){
+				alert("You are not allowed to upload in this section");
+			}
+		};
 		
 		xhr.open("POST", "upload", true);
 		xhr.send(formDataRequest);
