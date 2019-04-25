@@ -50,7 +50,6 @@
 }
 
 #workspace #objectsBar #UploadBar.active {
-	width: 100%;
 	display: block;
 }
 

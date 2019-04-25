@@ -34,6 +34,7 @@ socket.on("loadChat", function(msg) {
 });
 
 socket.on("loadChatList", function (msg) {
+	clearChatList();
 	var chatList = JSON.parse(msg)
 	for (var i = 0; i<chatList.length; i++) {
 		addchat2List(chatList[i]["name"],
@@ -57,6 +58,8 @@ socket.on("recvPost", function(msg) {
 		}
 	}
 });
+
+
 
 function sendPost () {
 	if (typeof activeChat !== 'undefined') {
@@ -144,11 +147,11 @@ function changeChat() {
 }
 
 function clearObjectsBar() {
-	while (objectsBar.firstChild) {
+	while (objectsBar.firstElementChild != objectsBar.lastElementChild) {
 		objectsBar.removeChild(objectsBar.firstChild);
 	}
 	
-	addObjects2ObjectsBar("+", false);
+	//addObjects2ObjectsBar("+", false);
 }
 
 function addObjects2ObjectsBar(content, active) {
@@ -176,6 +179,7 @@ fileDropZone.addEventListener("drop", function (event) {
 
 function uploadFiles() {
 	console.log(uploadQueue.length);
+	var counter = 0;
 	while (uploadQueue.length) {
 		var xhr = new XMLHttpRequest();
 		
@@ -185,8 +189,16 @@ function uploadFiles() {
 		formDataRequest.append("file", file);
 		console.log(formDataRequest);
 		
+		progressBar.setAttribute("max", uploadSizes[counter]);
+		progressBar.classList.add("active");
+		
 		xhr.upload.addEventListener("progress", function (event) {
-			console.log(event.loaded);
+			progressBar.setAttribute("value", event.loaded);
+		});
+		
+		xhr.upload.addEventListener("load", function (event) {
+			console.log("ready");
+			progressBar.classList.remove("active");
 		});
 		
 		xhr.open("POST", "upload", true);
