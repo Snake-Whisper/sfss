@@ -15,7 +15,7 @@ from validate_email import validate_email
 from functools import wraps
 import cgitb
 
-cgitb.enable()
+#cgitb.enable()
 
 app = Flask(__name__)
 app.config.update(
@@ -91,8 +91,8 @@ def getRedis():
 	
 def getDBCursor():
 	if not hasattr(g, 'db'):
-		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
-		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
+		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
+		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
 	return g.db.cursor()
 
 @app.teardown_appcontext
@@ -175,10 +175,10 @@ def __addChatEntry(DBdescriptor, author, chatID, content, file="", ctime=None):
 def _addChatEntry(author, chatID, content, file="", time=None):
 	__addChatEntry(getDBCursor(),  author, chatID, content, file, time)
 	
-def __addChat(DBdescriptor, name, UID, GID, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins=""):
-	DBdescriptor.execute("INSERT INTO chats (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins) VALUES (%s, %s, %s, %s, %s, %s, %s)", (name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins))
+def __addChat(DBdescriptor, name, UID, readUsers="", readGroups="", postUsers="", postGroups="", sendUsers="", sendGroups="", grantUsers="", grantGroups="", OtherPermission=""):
+	DBdescriptor.execute("INSERT INTO chats (name, UID, readUsers, readGroups, postUsers, postGroups, sendUsers, sendGroups, grantUsers, grantGroups, OtherPermission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (name, UID, readUsers, readGroups, postUsers, postGroups, sendUsers, sendGroups, grantUsers, grantGroups, OtherPermission))
 
-def _addChat(name, UID, GID, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins=""):
+def _addChat(name, UID, readUsers="", readGroups="", postUsers="", postGroups="", sendUsers="", sendGroups="", grantUsers="", grantGroups="", OtherPermission=""):
 	__addChat(getDBCursor(), name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins)
 
 def _addGroup(groupname, owner, members="", admins=""):
@@ -330,20 +330,27 @@ def initdb():
 @app.cli.command("randomFill") #changed auto time!!!
 def randomFill():
 	import os #dirty
-	os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
-	#os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	#os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
 	time.sleep(2)
 	c = getDBCursor()
 	with app.open_resource('schema.sql', mode='r') as f:		
 		for query in f.read().split(";")[:-1]:
 			print(query)
 			c.execute(query)
-		f.close() 
+		f.close()
+	#c.execute("source trigger.sql")
+#	with app.open_resource('trigger.sql', mode='r') as f:		
+#		query = f.read()
+#		print(query)
+#		c.execute(query)
+#		f.close()
 	_registerUser("b", "b", email="verf@web-utils.ml")
 	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
 		__addGroup(c, "TestGruppe"+str(i), owner=i, members='3,4,5', admins="3,4")
-		__addChat(c, "Chat"+str(i), 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
+		#__addChat(c, "Chat"+str(i), 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
+		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", postUsers="9,10", postGroups="4,7", sendUsers="3,8", sendGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
 	
 	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
 	c.close()

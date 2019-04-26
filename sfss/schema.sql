@@ -1,3 +1,4 @@
+DROP table if exists users;
 CREATE TABLE IF NOT EXISTS users (
 	id SMALLINT unsigned primary key AUTO_INCREMENT,
 	username VARCHAR(50) NOT NULL,
@@ -5,12 +6,14 @@ CREATE TABLE IF NOT EXISTS users (
 	firstName VARCHAR(50),
 	lastName VARCHAR(50),
 	email VARCHAR(75) NOT NULL,
+	groups TEXT,
 	enabled boolean NOT NULL default true,
 	UNIQUE (username),
 	UNIQUE (email),
 	INDEX (username),
 	INDEX (email)) ENGINE=INNODB;
 
+DROP table if exists groups;
 CREATE TABLE IF NOT EXISTS groups (
 	id SMALLINT unsigned primary key AUTO_INCREMENT,
 	groupname VARCHAR(50) NOT NULL,	
@@ -23,28 +26,46 @@ CREATE TABLE IF NOT EXISTS groups (
 	UNIQUE(groupname),
 	INDEX (groupname)) ENGINE=INNODB;
 
+DROP table if exists chats;
 CREATE TABLE IF NOT EXISTS chats (
 	id INT unsigned primary key AUTO_INCREMENT,
 	name VARCHAR(30) NOT NULL,
 	ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	atime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	UID SMALLINT unsigned NOT NULL,
-	GID SMALLINT unsigned NOT NULL,
-	OwnerPermission TINYINT NOT NULL,
-	GroupPermission TINYINT NOT NULL,
-	OtherPermission TINYINT NOT NULL,
-	admins TEXT NOT NULL,	
+	UID SMALLINT unsigned NOT NULL, #all rights
+	readUsers VARCHAR(20), #chat visible
+	readGroups VARCHAR(20),
+	postUsers VARCHAR(20), #write to chat
+	postGroups VARCHAR(20),
+	sendUsers VARCHAR(20), #send File
+	sendGroups VARCHAR(20),
+	grantUsers VARCHAR(20), #grant permission
+	grantGroups VARCHAR(20),
+	#GID SMALLINT unsigned NOT NULL,
+	#OwnerPermission TINYINT NOT NULL,
+	#GroupPermission TINYINT NOT NULL,
+	OtherPermission TINYINT NOT NULL, #1 send #2 post #4 visible
+	#admins TEXT NOT NULL,
 	FOREIGN KEY (UID) REFERENCES users (id),
-	FOREIGN KEY (GID) REFERENCES groups (id),
+	#FOREIGN KEY (GID) REFERENCES groups (id),
 	UNIQUE(name),
 	INDEX (name),
 	INDEX (UID),
-	INDEX (GID),
-	INDEX (OwnerPermission),
-	INDEX (GroupPermission),
+	INDEX(readUsers),
+	INDEX(readGroups),
+	INDEX(postUsers),
+	INDEX(postGroups),
+	INDEX(sendUsers),
+	INDEX(sendGroups),
+	INDEX(grantUsers),
+	INDEX(grantGroups),
+	#INDEX (GID),
+	#INDEX (OwnerPermission),
+	#INDEX (GroupPermission),
 	INDEX (OtherPermission)) ENGINE=INNODB;
-	
+
+DROP table if exists files;
 CREATE TABLE IF NOT EXISTS files (
 	id INT unsigned primary key AUTO_INCREMENT,
 	fileNO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -61,6 +82,7 @@ CREATE TABLE IF NOT EXISTS files (
 	INDEX (position),
 	INDEX (owner)) ENGINE=INNODB; #check if right index!!!
 
+DROP table if exists chatEntries;
 CREATE TABLE IF NOT EXISTS chatEntries (
 	id INT unsigned primary key AUTO_INCREMENT,
 	author SMALLINT unsigned NOT NULL,
@@ -72,4 +94,9 @@ CREATE TABLE IF NOT EXISTS chatEntries (
 	FOREIGN KEY (chatID) REFERENCES chats(id),
 	FOREIGN KEY (file) REFERENCES files(id),
 	INDEX (chatID)) ENGINE=INNODB;
-	
+
+DROP table if exists TriggerLog;
+create table TriggerLog (
+	id int primary Key auto_increment,
+    msg text);
+#SOURCE trigger.sql;
