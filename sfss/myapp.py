@@ -339,12 +339,13 @@ def randomFill():
 			print(query)
 			c.execute(query)
 		f.close()
-	#c.execute("source trigger.sql")
-#	with app.open_resource('trigger.sql', mode='r') as f:		
-#		query = f.read()
-#		print(query)
-#		c.execute(query)
-#		f.close()
+	print("========== Trigger ==========")
+	with app.open_resource('trigger.sql', mode='r') as f:		
+		for query in f.read().split("$$")[:-1]:
+			print(query)
+			c.execute(query)
+		f.close()
+
 	_registerUser("b", "b", email="verf@web-utils.ml")
 	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))

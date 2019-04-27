@@ -1,6 +1,3 @@
-use sfss;
-DROP TRIGGER IF EXISTS groupSync;
-DELIMITER $$
 CREATE TRIGGER groupSync
 AFTER INSERT
 ON sfss.groups
@@ -32,4 +29,3 @@ BEGIN
 		SET v_userstring = INSERT(v_userstring,1,v_frontlen + 1,'');
     END LOOP;
 END$$
-DELIMITER ;
