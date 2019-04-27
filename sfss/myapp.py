@@ -360,6 +360,7 @@ def randomFill():
 	for i in range(20):
 		for y in range(20):
 			__addChatEntry(c, random.randint(1,19), random.randint(1,19), "test"+str(y)) #DBdescriptor, author, chatID, content, file="NULL"
+	c.execute("TRUNCATE TABLE TriggerLog")
 	c.close()
 	g.db.commit()
 

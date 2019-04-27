@@ -99,4 +99,3 @@ DROP table if exists TriggerLog;
 create table TriggerLog (
 	id int primary Key auto_increment,
     msg text);
-#SOURCE trigger.sql;
