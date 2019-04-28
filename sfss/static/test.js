@@ -178,7 +178,6 @@ function addObjects2ObjectsBar(content, active) {
 fileDropZone.addEventListener("drop", function (event) {
 	event.preventDefault();
 	event.stopPropagation(); //test!
-	console.log(event.dataTransfer.files.length);
 	for (var i = 0; i < event.dataTransfer.files.length; i++) {
 		uploadQueue.push(event.dataTransfer.files[i]);
 		uploadSizes.push(event.dataTransfer.files[i].size);
@@ -188,18 +187,16 @@ fileDropZone.addEventListener("drop", function (event) {
 
 function uploadFiles() {
 	console.log(uploadQueue.length);
-	var counter = 0;
 	while (uploadQueue.length) {
 		var xhr = new XMLHttpRequest();
 		
 		var formDataRequest = new FormData();
 		var file = uploadQueue.shift();
-		console.log(file);
+		var currentUploadSize = uploadSizes.shift();
 		formDataRequest.append("file", file);
 		formDataRequest.append("activeChat", activeChat);
-		console.log(formDataRequest);
 		
-		progressBar.setAttribute("max", uploadSizes[counter]);
+		progressBar.setAttribute("max", currentUploadSize);
 		progressBar.classList.add("active");
 		
 		xhr.upload.addEventListener("progress", function (event) {
@@ -221,6 +218,5 @@ function uploadFiles() {
 		
 		xhr.open("POST", "upload", true);
 		xhr.send(formDataRequest);
-		
 	}
 }
