@@ -15,7 +15,7 @@ from validate_email import validate_email
 from functools import wraps
 import cgitb
 
-#cgitb.enable()
+cgitb.enable()
 
 app = Flask(__name__)
 app.config.update(
@@ -54,7 +54,7 @@ class chatNameSpace(Namespace):
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
-			
+		print(chkChatAccess(msg['chatId']))	
 		emit("loadChat", json.dumps(chatEntries))
 		
 		
@@ -155,12 +155,13 @@ def chkLogin(username, password):
 	
 
 def chkChatAccess(chatID):
-	try:
-		chatID = int(chatID)
-		return chatID == query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))",
-		  (chatID, session["userID"], session["userID"],))[0]['id']#add int
-	except:
-		return False
+	#try:
+	chatID = int(chatID)
+		#return chatID == query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))",
+		#  (chatID, session["userID"], session["userID"],))[0]['id']#add int
+	return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.readGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	#except:
+	#	return False
 
 ############################################### adder ###############################################################
 
@@ -216,7 +217,8 @@ def getUsername(username):
 
 def _getChats(userID):
 	#return query("SELECT chats.id from chats INNER JOIN groups on chats.GID = groups.id WHERE chats.id = %s AND (chats.UID = %s OR FIND_IN_SET(%s, groups.members))"(userID, userID,))
-	return query("SELECT chats.name, chats.id FROM chats INNER JOIN groups on chats.GID = groups.id WHERE chats.UID = %s OR FIND_IN_SET(%s, groups.members)", (userID, userID,))
+	#return query("SELECT chats.name, chats.id FROM chats INNER JOIN groups on chats.GID = groups.id WHERE chats.UID = %s OR FIND_IN_SET(%s, groups.members)", (userID, userID,))
+	return query("SELECT chats.name, chats.id FROM chats WHERE chats.UID = %s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id = %s), chats.readGroups)", (userID, userID, userID,))
 
 def getOwnChats():
 	return _getChats(session["userID"])
@@ -224,6 +226,9 @@ def getOwnChats():
 def getChatEntries(chatID):
 	#return query("select author, ctime, file, content from chatEntries where ChatID = %s", (chatID,))
 	return query("SELECT users.username, chatEntries.ctime, chatEntries.file, chatEntries.content FROM chatEntries INNER JOIN users ON chatEntries.author=users.id WHERE chatEntries.ChatID = %s", (chatID,))
+
+def getGroups():
+	return query("SELECT groups FROM users where id = %s", (session["userID"]))[0]['groups'].split(",")
 
 def _getFiles(id):
 	return query("SELECT * FROM files WHERE ChatID = %s",(id,)) #TODO: Complete!!!
@@ -269,6 +274,7 @@ def registerKey(key):
 @app.route("/")
 @login_required
 def home():
+	#return str(getOwnChats())
 	return render_template("workspace.html", chats=getOwnChats(), chatEntries=getChatEntries(1))
 @app.route("/notImpl/<item>")
 @login_required
@@ -301,6 +307,8 @@ def login():
 			key = mail.genKey()
 			getRedis().set(key, userid, app.config["AUTO_LOGOUT"])
 			session["authID"] = key
+			#session["groups"] = getGroups() #to dangerous -> changes only apply by login
+			#print(session["groups"])
 			return redirect("/")
 		flash("authentication failure")
 		return redirect("/login")#replace with correct call of render template?
@@ -310,6 +318,9 @@ def login():
 def logout():
 	if 'username' in session or 'authID' in session:
 		session.pop('username', None)
+		session.pop('userID', None)
+		session.pop('ownGroups', None)
+		
 		getRedis().delete(session.pop('authID', ""))
 		return redirect("/login")
 	else:
@@ -349,7 +360,7 @@ def randomFill():
 	_registerUser("b", "b", email="verf@web-utils.ml")
 	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
-		__addGroup(c, "TestGruppe"+str(i), owner=i, members='3,4,5', admins="3,4")
+		__addGroup(c, "TestGruppe"+str(i), owner=i, members='1,3,4,5', admins="3,4")
 		#__addChat(c, "Chat"+str(i), 1, 1, OwnerPermission=7, GroupPermission=6, OtherPermission=0, admins="")
 		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", postUsers="9,10", postGroups="4,7", sendUsers="3,8", sendGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
 	
