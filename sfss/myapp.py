@@ -49,6 +49,9 @@ class chatNameSpace(Namespace):
 		emit("recvPost", json.dumps(packet), room=int(msg["chatId"])) #disable broadcast!!!
 		
 	def on_cdChat(self, msg):
+		if not chkChatAccess(msg['chatId']):
+			emit("loadChat", json.dumps([{"username":"BOT", "content":"Nice Try", "ctime":0}]))
+			return
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
@@ -150,8 +153,11 @@ def chkLogin(username, password):
 	
 
 def chkChatAccess(chatID):
-	chatID = int(chatID)
-	return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.readGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	try:
+		chatID = int(chatID)
+		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.readGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	except:
+		return False
 
 ############################################### adder ###############################################################
 
