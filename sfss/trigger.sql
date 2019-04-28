@@ -106,3 +106,26 @@ BEGIN
 		SET v_olduserstring = INSERT(v_olduserstring,1,v_frontlen + 1,'');
     END LOOP;
 END$$
+
+CREATE FUNCTION SET_IN_SET(
+	p_source TEXT, p_destination TEXT)
+RETURNS INTEGER
+BEGIN
+	DECLARE v_front TEXT DEFAULT NULL;
+    DECLARE v_frontlen INT DEFAULT NULL;
+    DECLARE v_user TEXT DEFAULT NULL;
+	iterator:
+    LOOP
+		IF LENGTH(TRIM(p_source)) = 0 OR p_source IS NULL THEN
+			LEAVE iterator;
+		END IF;
+		SET v_front = SUBSTRING_INDEX(p_source,',',1);
+		SET v_frontlen = LENGTH(v_front);
+		SET v_user = TRIM(v_front);
+		IF FIND_IN_SET(v_user, p_destination) > 0 THEN
+			RETURN 1;
+		END IF;
+		SET p_source = INSERT(p_source,1,v_frontlen + 1,'');
+    END LOOP;
+	RETURN 0;
+END$$
