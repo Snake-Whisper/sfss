@@ -18,10 +18,10 @@ BEGIN
 		SET v_front = SUBSTRING_INDEX(v_userstring, ',', 1);
 		SET v_frontlen = LENGTH(v_front);
 		SET v_user = TRIM(v_front);
-        select users.groups into v_tmpUserGroups from sfss.users where id = v_user;
+        SELECT users.groups into v_tmpUserGroups FROM sfss.users WHERE id = v_user;
         SET v_buffer = FIND_IN_SET(new.id , v_tmpUserGroups);
         IF v_buffer = 0 or v_buffer IS NULL THEN 
-			UPDATE users set users.groups = concat_ws(",", v_tmpUserGroups, new.id) where users.id = v_user;
+			UPDATE users set users.groups = concat_ws(",", v_tmpUserGroups, new.id) WHERE users.id = v_user;
 		END IF;			
 		SET v_userstring = INSERT(v_userstring,1,v_frontlen + 1,'');
     END LOOP;
@@ -70,8 +70,7 @@ BEGIN
         SELECT users.groups INTO v_tmpUserGroups FROM sfss.users WHERE id = v_user;
         SET v_buffer = FIND_IN_SET(new.id , v_tmpUserGroups);
         IF v_buffer = 0 or v_buffer IS NULL THEN 
-			INSERT INTO sfss.TriggerLog (msg) VALUES(concat("executed: ", new.id));
-			UPDATE users set users.groups = TRIM(BOTH "," FROM concat_ws(",", v_tmpUserGroups, new.id)) where users.id = v_user;
+			UPDATE users SET users.groups = TRIM(BOTH "," FROM concat_ws(",", v_tmpUserGroups, new.id)) WHERE users.id = v_user;
 		END IF;			
 		SET v_userstring = INSERT(v_userstring,1,v_frontlen + 1,'');
     END LOOP;
