@@ -39,7 +39,10 @@ class chatNameSpace(Namespace):
 		pass
 	
 	def on_sendPost(self, msg):
-		#TODO: check for authority and available!		
+		#TODO: check for authority and available!
+		if not chkChatWriteAccess(msg['chatId']):
+			self.bot_answer("You are not alowed to post here!", msg)
+			return
 		packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
 				   "username" : session["username"],
 				   "content" : msg["content"],
@@ -49,15 +52,24 @@ class chatNameSpace(Namespace):
 		emit("recvPost", json.dumps(packet), room=int(msg["chatId"])) #disable broadcast!!!
 		
 	def on_cdChat(self, msg):
-		if not chkChatAccess(msg['chatId']):
-			emit("loadChat", json.dumps([{"username":"BOT", "content":"Nice Try", "ctime":0}]))
+		if not chkChatReadAccess(msg['chatId']):
+			self.bot_answer("This chat isn't visible to you (anymore)", msg)
+			emit("loadChatList", json.dumps(getOwnChats()))
+			#emit("loadChat", json.dumps([{"username":"BOT", "content":"Nice Try", "ctime":0}]))
 			return
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
-		print(chkChatAccess(msg['chatId']))	
 		emit("loadChat", json.dumps(chatEntries))
+	
+	def bot_answer(self, answer, msg):
+		self.packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
+				   "username" : "BOT",
+				   "content" : answer,
+				   "chatId" : msg["chatId"]
+				  }]
 		
+		emit("recvPost", json.dumps(self.packet))
 		
 socketio.on_namespace(chatNameSpace("/chat"))
 		
@@ -152,12 +164,34 @@ def chkLogin(username, password):
 
 	
 
-def chkChatAccess(chatID):
+def chkChatReadAccess(chatID):
 	try:
 		chatID = int(chatID)
 		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.readGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
 	except:
 		return False
+	
+def chkChatWriteAccess(chatID):
+	try:
+		chatID = int(chatID)
+		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.writeUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.writeGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	except:
+		return False
+
+def chkChatGrantAccess(chatID):
+	try:
+		chatID = int(chatID)
+		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.grantUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.grantGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	except:
+		return False
+
+def chkChatUploadAccess(chatID):
+	try:
+		chatID = int(chatID)
+		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.uploadUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.uploadGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
+	except:
+		return False
+
 
 ############################################### adder ###############################################################
 
@@ -172,10 +206,10 @@ def __addChatEntry(DBdescriptor, author, chatID, content, file="", ctime=None):
 def _addChatEntry(author, chatID, content, file="", time=None):
 	__addChatEntry(getDBCursor(),  author, chatID, content, file, time)
 	
-def __addChat(DBdescriptor, name, UID, readUsers="", readGroups="", postUsers="", postGroups="", sendUsers="", sendGroups="", grantUsers="", grantGroups="", OtherPermission=""):
-	DBdescriptor.execute("INSERT INTO chats (name, UID, readUsers, readGroups, postUsers, postGroups, sendUsers, sendGroups, grantUsers, grantGroups, OtherPermission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (name, UID, readUsers, readGroups, postUsers, postGroups, sendUsers, sendGroups, grantUsers, grantGroups, OtherPermission))
+def __addChat(DBdescriptor, name, UID, readUsers="", readGroups="", writeUsers="", writeGroups="", uploadUsers="", uploadGroups="", grantUsers="", grantGroups="", OtherPermission=""):
+	DBdescriptor.execute("INSERT INTO chats (name, UID, readUsers, readGroups, writeUsers, writeGroups, uploadUsers, uploadGroups, grantUsers, grantGroups, OtherPermission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", (name, UID, readUsers, readGroups, writeUsers, writeGroups, uploadUsers, uploadGroups, grantUsers, grantGroups, OtherPermission))
 
-def _addChat(name, UID, readUsers="", readGroups="", postUsers="", postGroups="", sendUsers="", sendGroups="", grantUsers="", grantGroups="", OtherPermission=""):
+def _addChat(name, UID, readUsers="", readGroups="", writeUsers="", writeGroups="", uploadUsers="", uploadGroups="", grantUsers="", grantGroups="", OtherPermission=""):
 	__addChat(getDBCursor(), name, UID, GID, OwnerPermission, GroupPermission, OtherPermission, admins)
 
 def _addGroup(groupname, owner, members="", admins=""):
@@ -338,7 +372,7 @@ def randomFill():
 	for i in range(20):
 		_registerUser("test"+str(i), "geheim", email="test{0}@web-utils.ml".format(i))
 		__addGroup(c, "TestGruppe"+str(i), owner=i, members='1,3,4,5', admins="3,4")
-		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", postUsers="9,10", postGroups="4,7", sendUsers="3,8", sendGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
+		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", writeUsers="9,10", writeGroups="4,7", uploadUsers="3,8", uploadGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
 	
 	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
 	c.close()

@@ -36,10 +36,10 @@ CREATE TABLE IF NOT EXISTS chats (
 	UID SMALLINT unsigned NOT NULL, #all rights
 	readUsers VARCHAR(20), #chat visible
 	readGroups VARCHAR(20),
-	postUsers VARCHAR(20), #write to chat
-	postGroups VARCHAR(20),
-	sendUsers VARCHAR(20), #send File
-	sendGroups VARCHAR(20),
+	writeUsers VARCHAR(20), #write to chat
+	writeGroups VARCHAR(20),
+	uploadUsers VARCHAR(20), #send File
+	uploadGroups VARCHAR(20),
 	grantUsers VARCHAR(20), #grant permission
 	grantGroups VARCHAR(20),
 	#GID SMALLINT unsigned NOT NULL,
@@ -54,10 +54,10 @@ CREATE TABLE IF NOT EXISTS chats (
 	INDEX (UID),
 	INDEX(readUsers),
 	INDEX(readGroups),
-	INDEX(postUsers),
-	INDEX(postGroups),
-	INDEX(sendUsers),
-	INDEX(sendGroups),
+	INDEX(writeUsers),
+	INDEX(writeGroups),
+	INDEX(uploadUsers),
+	INDEX(uploadGroups),
 	INDEX(grantUsers),
 	INDEX(grantGroups),
 	#INDEX (GID),
