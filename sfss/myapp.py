@@ -14,6 +14,7 @@ import os.path
 from validate_email import validate_email
 from functools import wraps
 import cgitb
+import os
 
 cgitb.enable()
 
@@ -34,13 +35,16 @@ class chatNameSpace(Namespace):
 			join_room(i)
 		emit("setupMe", session["username"])
 		emit("loadChatList", json.dumps(getOwnChats()))
+		emit("chkWritePerm", {"writePerm" : False}) #change?
+		emit("chkUploadPerm", {"uploadPerm" : False})
+		emit("chkGrantPerm", {"grantPerm" : False})
 
 	def on_disconnect(self):
 		pass
 	
 	def on_sendPost(self, msg):
 		#TODO: check for authority and available!
-		if not chkChatWriteAccess(msg['chatId']):
+		if not chkChatWritePerm(msg['chatId']):
 			self.bot_answer("You are not alowed to post here!", msg)
 			return
 		packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
@@ -52,15 +56,27 @@ class chatNameSpace(Namespace):
 		emit("recvPost", json.dumps(packet), room=int(msg["chatId"])) #disable broadcast!!!
 		
 	def on_cdChat(self, msg):
-		if not chkChatReadAccess(msg['chatId']):
+		if not chkChatReadPerm(msg['chatId']):
 			self.bot_answer("This chat isn't visible to you (anymore)", msg)
 			emit("loadChatList", json.dumps(getOwnChats()))
-			#emit("loadChat", json.dumps([{"username":"BOT", "content":"Nice Try", "ctime":0}]))
 			return
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
 		emit("loadChat", json.dumps(chatEntries))
+		emit("chkWritePerm", {"writePerm" : chkChatWritePerm(msg["chatId"])})
+		emit("chkUploadPerm", {"uploadPerm" : chkChatUploadPerm(msg["chatId"])})
+		emit("chkGrantPerm", {"grantPerm" : chkChatGrantPerm(msg["chatId"])})
+		
+	
+	def on_chkWritePerm(self, msg):
+		emit("chkWritePerm", {"writePerm" : chkChatWritePerm(msg["chatId"])})
+	def on_chkUploadPerm(self, msg):
+		emit("chkUploadPerm", {"uploadPerm" : chkChatUploadPerm(msg["chatId"])})
+	def on_chkGrantPerm(self, msg):
+		emit("chkGrantPerm", {"grantPerm" : chkChatGrantPerm(msg["chatId"])})
+	
+	
 	
 	def bot_answer(self, answer, msg):
 		self.packet = [{"ctime" : time.strftime("%d.%b.%y, %H:%M"), 
@@ -164,28 +180,28 @@ def chkLogin(username, password):
 
 	
 
-def chkChatReadAccess(chatID):
+def chkChatReadPerm(chatID):
 	try:
 		chatID = int(chatID)
 		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.readUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.readGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
 	except:
 		return False
 	
-def chkChatWriteAccess(chatID):
+def chkChatWritePerm(chatID):
 	try:
 		chatID = int(chatID)
 		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.writeUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.writeGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
 	except:
 		return False
 
-def chkChatGrantAccess(chatID):
+def chkChatGrantPerm(chatID):
 	try:
 		chatID = int(chatID)
 		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.grantUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.grantGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
 	except:
 		return False
 
-def chkChatUploadAccess(chatID):
+def chkChatUploadPerm(chatID):
 	try:
 		chatID = int(chatID)
 		return chatID == query("SELECT id FROM chats WHERE chats.id = %s and (chats.UID=%s OR FIND_IN_SET(%s, chats.uploadUsers) OR SET_IN_SET((SELECT groups from users where id=%s), chats.uploadGroups))", (chatID, session["userID"], session["userID"], session["userID"], ))[0]['id']
@@ -298,14 +314,21 @@ def notImpl(item):
 @login_required
 def upload():
 	#TODO: do some security checks
-	print(type(request.form["activeChat"]))
-	if request.form["activeChat"] == '0':
+	print(os.getcwd())
+	if not request.form["chatId"]:
+		return abort(401)
+	print(type(request.form["chatId"]))
+	if not chkChatUploadPerm(request.form["chatId"]):
+		print("abort")
 		return abort(401)
 	if "file" in request.files: #ToDO: Improve
 		print("ok")
+	else:
+		print("no file")
 	file = request.files['file']
 	filename = secure_filename(file.filename)
 	file.save(os.path.join("/tmp", filename))
+	print("saved")
 	return "ok"
 
 @app.route("/login/", methods=["POST", "GET"])

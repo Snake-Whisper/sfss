@@ -1,10 +1,15 @@
 var me;
 var activeChat = 0;
+var writePerm = true;
+var uploadPerm = true;
+var grantPerm = true;
 var chats = document.getElementById("chats");
 var chatEntries = document.getElementById("chat");
 var objectsBar = document.getElementById("objectsBar");
 var progressBar = document.getElementById("UploadBar");
 var fileDropZone = document.getElementById("dropFile");
+var postBar = document.getElementById("post");
+var fileDropZoneObject = document.getElementById("dropFileObject");
 var uploadQueue = [];
 var uploadSizes = [];
 var uploadTotalProceeds = [];
@@ -68,7 +73,48 @@ socket.on("recvPost", function(msg) {
 	}
 });
 
+socket.on("chkWritePerm", function (msg) {
+	writePerm = msg["writePerm"];
+	console.log(writePerm);
+	if (writePerm) {
+		post.classList.remove("hidden");
+	} else {
+		post.classList.add("hidden");
+	}
+	
+});
 
+socket.on("chkUploadPerm", function (msg) {
+	uploadPerm = msg["uploadPerm"];
+	console.log(uploadPerm);
+	if (uploadPerm) {
+		fileDropZoneObject.classList.remove("hidden");
+		fileDropZone.classList.remove("hidden");
+	} else {
+		fileDropZoneObject.classList.add("hidden");
+		fileDropZone.classList.add("hidden");
+	}
+	
+});
+
+socket.on("chkGrantPerm", function (msg) {
+	grantPerm = msg["grantPerm"];
+	console.log(grantPerm);
+	
+});
+
+function chkWritePerm() {
+	socket.emit("chkWritePerm", {chatId: activeChat});
+	//console.log("send");
+}
+
+function chkUploadPerm() {
+	socket.emit("chkUploadPerm", {chatId: activeChat});
+}
+
+function chkGrantPerm() {
+	socket.emit("chkGrantPerm", {chatId: activeChat});
+}
 
 function sendPost () {
 	if (activeChat != 0) {
@@ -194,7 +240,7 @@ function uploadFiles() {
 		var file = uploadQueue.shift();
 		var currentUploadSize = uploadSizes.shift();
 		formDataRequest.append("file", file);
-		formDataRequest.append("activeChat", activeChat);
+		formDataRequest.append("chatId", activeChat);
 		
 		progressBar.setAttribute("max", currentUploadSize);
 		progressBar.classList.add("active");
