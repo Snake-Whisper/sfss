@@ -23,7 +23,8 @@ app.config.update(
 	SECRET_KEY = '\x81H\xb8\xa3S\xf8\x8b\xbd"o\xca\xd7\x08\xa4op\x07\xb5\xde\x87\xb8\xcc\xe8\x86\\\xffS\xea8\x86"\x97',
 	REDIS_URL = "redis://localhost:6379/0",
 	AUTO_LOGOUT = 43200,
-	MAX_CONTENT_LENGTH = 30 * 1024 * 1024
+	MAX_CONTENT_LENGTH = 30 * 1024 * 1024,
+	DATADIR = "/server/python/pythonapps/sfss/sfss/data"
 )
 socketio = SocketIO(app)
 
@@ -234,14 +235,14 @@ def _addGroup(groupname, owner, members="", admins=""):
 def __addGroup(DBdescriptor, groupname, owner, members='', admins=""):
 	DBdescriptor.execute("INSERT INTO groups (groupname, owner, members, admins) VALUES (%s, %s, %s, %s)", (groupname, owner, members, admins))
 
-def _addFile(chatID, owner, url, fileNO="NULL",  position=0):
-	__addFile(getDBCursor(), fileNO, lastAuthor, chatID, position, owner, url)
+def _addFile(chatID, owner, url, version=0,  position=0):
+	__addFile(getDBCursor(), version, lastAuthor, chatID, position, owner, url)
 
-def __addFile(DBdescriptor, chatID, owner, url, fileNO="",  position=0):
-	if fileNO:
-		DBdescriptor.execute("INSERT INTO files (fileNO, chatID, position, owner, url) VALUES (%s, %s, %s, %s, %s)", (fileNO, chatID, position, owner, url))
-	else:
-		DBdescriptor.execute("INSERT INTO files (chatID, position, owner, url) VALUES (%s, %s, %s, %s)", (chatID, position, owner, url))
+#def __addFile(DBdescriptor, chatID, owner, url, version, position=0):
+#	if fileNO:
+#		DBdescriptor.execute("INSERT INTO files (version, chatID, position, owner, url) VALUES (%s, %s, %s, %s, %s)", (fileNO, chatID, position, owner, url))
+#	else:
+#		DBdescriptor.execute("INSERT INTO files (chatID, position, owner, url) VALUES (%s, %s, %s, %s)", (chatID, position, owner, url))
 
 ########################################## getter ###############################################
 
@@ -314,12 +315,7 @@ def notImpl(item):
 @login_required
 def upload():
 	#TODO: do some security checks
-	print(os.getcwd())
-	if not request.form["chatId"]:
-		return abort(401)
-	print(type(request.form["chatId"]))
-	if not chkChatUploadPerm(request.form["chatId"]):
-		print("abort")
+	if not all([request.form["chatId"], chkChatUploadPerm(request.form["chatId"])]):
 		return abort(401)
 	if "file" in request.files: #ToDO: Improve
 		print("ok")
@@ -397,7 +393,7 @@ def randomFill():
 		__addGroup(c, "TestGruppe"+str(i), owner=i, members='1,3,4,5', admins="3,4")
 		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", writeUsers="9,10", writeGroups="4,7", uploadUsers="3,8", uploadGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
 	
-	__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
+	#__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
 	c.close()
 	g.db.commit() #manual tear down!
 	c = getDBCursor()

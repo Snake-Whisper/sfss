@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS chats (
 DROP table if exists files;
 CREATE TABLE IF NOT EXISTS files (
 	id INT unsigned primary key AUTO_INCREMENT,
-	fileNO TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	version SMALLINT unsigned NOT NULL,
 	chatID INT unsigned NOT NULL,
 	position TINYINT unsigned DEFAULT NULL,
 	owner SMALLINT unsigned NOT NULL,
