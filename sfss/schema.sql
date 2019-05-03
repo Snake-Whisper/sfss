@@ -42,13 +42,8 @@ CREATE TABLE IF NOT EXISTS chats (
 	uploadGroups VARCHAR(20),
 	grantUsers VARCHAR(20), #grant permission
 	grantGroups VARCHAR(20),
-	#GID SMALLINT unsigned NOT NULL,
-	#OwnerPermission TINYINT NOT NULL,
-	#GroupPermission TINYINT NOT NULL,
 	OtherPermission TINYINT NOT NULL, #1 send #2 post #4 visible
-	#admins TEXT NOT NULL,
 	FOREIGN KEY (UID) REFERENCES users (id),
-	#FOREIGN KEY (GID) REFERENCES groups (id),
 	UNIQUE(name),
 	INDEX (name),
 	INDEX (UID),
@@ -60,9 +55,6 @@ CREATE TABLE IF NOT EXISTS chats (
 	INDEX(uploadGroups),
 	INDEX(grantUsers),
 	INDEX(grantGroups),
-	#INDEX (GID),
-	#INDEX (OwnerPermission),
-	#INDEX (GroupPermission),
 	INDEX (OtherPermission)) ENGINE=INNODB;
 
 DROP table if exists files;

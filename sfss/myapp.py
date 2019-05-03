@@ -317,7 +317,6 @@ def notImpl(item):
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
-	#TODO: do some security checks
 	if not all([request.form["chatId"], chkChatUploadPerm(request.form["chatId"])]):
 		return abort(401)
 	if "file" in request.files: #ToDO: Improve
@@ -398,7 +397,6 @@ def randomFill():
 	
 	__addFile(getDBCursor(), 2, 1, "/dev/null")
 	__addFileVersion(getDBCursor(), 2, 1, 1, "/dev/null")
-	#__addFile(DBdescriptor, chatID, fileNO, owner, url)
 	c.close()
 	g.db.commit() #manual tear down!
 	c = getDBCursor()
