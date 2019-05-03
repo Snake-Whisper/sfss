@@ -24,9 +24,11 @@ app.config.update(
 	REDIS_URL = "redis://localhost:6379/0",
 	AUTO_LOGOUT = 43200,
 	MAX_CONTENT_LENGTH = 30 * 1024 * 1024,
-	DATADIR = "/server/python/pythonapps/sfss/sfss/data"
+	#DATADIR = "/server/python/pythonapps/sfss/sfss/data"
+	DATADIR = "/tmp"
 )
 socketio = SocketIO(app)
+chatdir = os.path.join(app.config["DATADIR"], "files")
 
 ############## socket section #################################
 
@@ -236,7 +238,7 @@ def __addGroup(DBdescriptor, groupname, owner, members='', admins=""):
 	DBdescriptor.execute("INSERT INTO groups (groupname, owner, members, admins) VALUES (%s, %s, %s, %s)", (groupname, owner, members, admins))
 
 def _addFile(chatID, owner, url):
-	__addFile(getDBCursor(), chatID, fileNO, owner, url)
+	__addFile(getDBCursor(), chatID, owner, url)
 
 def __addFile(DBdescriptor, chatID, owner, url):
 	DBdescriptor.execute("INSERT INTO files (chatID, owner, url) VALUES (%s, %s, %s)", (chatID, owner, url))
@@ -278,7 +280,7 @@ def getGroups():
 	return query("SELECT groups FROM users where id = %s", (session["userID"]))[0]['groups'].split(",")
 
 def _getFiles(id):
-	return query("SELECT * FROM files WHERE ChatID = %s",(id,)) #TODO: Complete!!!
+	return query("SELECT version, fileNO FROM files WHERE ChatID = %s",(id,)) #TODO: Complete!!!
 
 
 ################################ filter ##########################################################
@@ -317,16 +319,18 @@ def notImpl(item):
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
+	global chatdir
 	if not all([request.form["chatId"], chkChatUploadPerm(request.form["chatId"])]):
 		return abort(401)
-	if "file" in request.files: #ToDO: Improve
-		print("ok")
-	else:
-		print("no file")
+	if not "file" in request.files: #ToDO: Improve
+		print("abort file transfer")
+		return abort(400)
 	file = request.files['file']
-	filename = secure_filename(file.filename)
-	file.save(os.path.join("/tmp", filename))
-	print("saved")
+	filename = "{0}_{1}".format(secure_filename(file.filename), int(time.time()*1000))
+	url = os.path.join(chatdir, filename)
+	file.save(url)
+	_addFile(request.form["chatId"], session["userID"], url)
+	print("saved:" + filename)
 	return "ok"
 
 @app.route("/login/", methods=["POST", "GET"])
