@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS files (
 	id INT unsigned primary key AUTO_INCREMENT,
 	version SMALLINT unsigned, # rm NOT NULL -> trigger works around
 	chatID INT unsigned NOT NULL,
-	position TINYINT unsigned DEFAULT NULL,
+	fileNO SMALLINT unsigned,
 	owner SMALLINT unsigned NOT NULL,
 	mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	compressed BOOLEAN DEFAULT FALSE NOT NULL,
@@ -79,7 +79,8 @@ CREATE TABLE IF NOT EXISTS files (
 	FOREIGN KEY (chatID) REFERENCES chats (id),
 	FOREIGN KEY (owner) REFERENCES users (id),
 	INDEX (chatID),
-	INDEX (position),
+	INDEX (fileNO),
+	INDEX (version),
 	INDEX (owner)) ENGINE=INNODB; #check if right index!!!
 
 DROP table if exists chatEntries;

@@ -235,14 +235,17 @@ def _addGroup(groupname, owner, members="", admins=""):
 def __addGroup(DBdescriptor, groupname, owner, members='', admins=""):
 	DBdescriptor.execute("INSERT INTO groups (groupname, owner, members, admins) VALUES (%s, %s, %s, %s)", (groupname, owner, members, admins))
 
-def _addFile(chatID, owner, url, version=0,  position=0):
-	__addFile(getDBCursor(), version, lastAuthor, chatID, position, owner, url)
+def _addFile(chatID, owner, url):
+	__addFile(getDBCursor(), chatID, fileNO, owner, url)
 
-#def __addFile(DBdescriptor, chatID, owner, url, version, position=0):
-#	if fileNO:
-#		DBdescriptor.execute("INSERT INTO files (version, chatID, position, owner, url) VALUES (%s, %s, %s, %s, %s)", (fileNO, chatID, position, owner, url))
-#	else:
-#		DBdescriptor.execute("INSERT INTO files (chatID, position, owner, url) VALUES (%s, %s, %s, %s)", (chatID, position, owner, url))
+def __addFile(DBdescriptor, chatID, owner, url):
+	DBdescriptor.execute("INSERT INTO files (chatID, owner, url) VALUES (%s, %s, %s)", (chatID, owner, url))
+
+def _addFileVersion(chatID, fileNO, owner, url):
+	__addFile(getDBCursor(), chatID, fileNO, owner, url)
+
+def __addFileVersion(DBdescriptor, chatID, fileNO, owner, url):
+	DBdescriptor.execute("INSERT INTO files (chatID, fileNO, owner, url) VALUES (%s, %s, %s, %s)", (chatID, fileNO, owner, url))
 
 ########################################## getter ###############################################
 
@@ -393,7 +396,9 @@ def randomFill():
 		__addGroup(c, "TestGruppe"+str(i), owner=i, members='1,3,4,5', admins="3,4")
 		__addChat(c, "Chat"+str(i), 1, readUsers="1,3,5", readGroups="2,4", writeUsers="9,10", writeGroups="4,7", uploadUsers="3,8", uploadGroups="1,2", grantUsers="5,3", grantGroups="1,2", OtherPermission="5")
 	
-	#__addFile(getDBCursor(), 1, 1, "/dev/null", position=0)
+	__addFile(getDBCursor(), 2, 1, "/dev/null")
+	__addFileVersion(getDBCursor(), 2, 1, 1, "/dev/null")
+	#__addFile(DBdescriptor, chatID, fileNO, owner, url)
 	c.close()
 	g.db.commit() #manual tear down!
 	c = getDBCursor()

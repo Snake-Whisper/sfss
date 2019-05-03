@@ -135,10 +135,22 @@ ON sfss.files
 FOR EACH ROW
 BEGIN
 	DECLARE v_maxVersion INT;
-	SELECT MAX(version) INTO v_maxVersion FROM files WHERE files.chatID = NEW.chatID;
+	DECLARE v_maxFileNO INT;
+	
+	IF NEW.fileNO IS NULL THEN
+		SELECT MAX(fileNO) INTO v_maxFileNO FROM files WHERE files.chatID = NEW.chatID;
+		IF v_maxFileNO IS NULL THEN
+			SET NEW.fileNO = 1;
+		ELSE
+			SET NEW.fileNO = v_maxFileNO + 1;
+		END IF;
+	END IF;
+	
+	SELECT MAX(version) INTO v_maxVersion FROM files WHERE files.chatID = NEW.chatID AND files.fileNO = NEW.fileNO;
 	IF v_maxVersion IS NULL THEN
 		SET NEW.version = 1;
 	ELSE
 		SET NEW.version = v_maxVersion + 1;
-	END IF;
+	END IF;	
+	
 END$$
