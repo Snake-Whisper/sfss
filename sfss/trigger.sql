@@ -128,3 +128,17 @@ BEGIN
     END LOOP;
 	RETURN 0;
 END$$
+
+CREATE TRIGGER fileVersionUpdate
+BEFORE INSERT
+ON sfss.files
+FOR EACH ROW
+BEGIN
+	DECLARE v_maxVersion INT;
+	SELECT MAX(version) INTO v_maxVersion FROM files WHERE files.chatID = NEW.chatID;
+	IF v_maxVersion IS NULL THEN
+		SET NEW.version = 1;
+	ELSE
+		SET NEW.version = v_maxVersion + 1;
+	END IF;
+END$$

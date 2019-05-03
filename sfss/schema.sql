@@ -68,14 +68,14 @@ CREATE TABLE IF NOT EXISTS chats (
 DROP table if exists files;
 CREATE TABLE IF NOT EXISTS files (
 	id INT unsigned primary key AUTO_INCREMENT,
-	version SMALLINT unsigned NOT NULL,
+	version SMALLINT unsigned, # rm NOT NULL -> trigger works around
 	chatID INT unsigned NOT NULL,
 	position TINYINT unsigned DEFAULT NULL,
 	owner SMALLINT unsigned NOT NULL,
 	mtime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	compressed BOOLEAN DEFAULT FALSE NOT NULL,
 	del BOOLEAN DEFAULT FALSE NOT NULL,
-	url varchar(50) NOT NULL,
+	url TEXT NOT NULL,
 	FOREIGN KEY (chatID) REFERENCES chats (id),
 	FOREIGN KEY (owner) REFERENCES users (id),
 	INDEX (chatID),
