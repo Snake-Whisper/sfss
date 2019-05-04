@@ -19,6 +19,50 @@ var socket = io.connect('https://' + document.domain + ':' + location.port + "/c
 
 inputField.value = "hallo";
 
+var fileControll = {
+	storage : {},
+	fileRegister : [],
+	maxVersions : {},
+	activeVersion : {},
+	add : function (fileObj) {
+			if (!this.storage.hasOwnProperty(fileObj["fileNO"])) {
+			   this.storage[fileObj["fileNO"]] = {};
+				//this.storage[fileObj["fileNO"]].maxVersion = 0;
+				this.maxVersions[fileObj["fileNO"]] = 0;
+				//this.storage[fileObj["fileNO"]].activeVersion = 0;
+				this.activeVersion[fileObj["fileNO"]] = 0;
+				this.fileRegister.push(fileObj["fileNO"]);
+				console.log("init");
+			}
+		this.storage[fileObj["fileNO"]][fileObj["version"]] = fileObj;
+		if (fileObj["version"] > this.maxVersions[fileObj["fileNO"]]) {
+			this.maxVersions[fileObj["fileNO"]] = fileObj["version"];
+			this.activeVersion[fileObj["fileNO"]] = fileObj["version"];
+		}
+	},
+	
+	clear : function() {
+		this.storage = {};
+		this.fileRegister = [];
+	},
+	
+	render : function() {
+		clearObjectsBar();
+		this.fileRegister.sort()
+		console.log(this.fileRegister.length);
+		for (var i = 0; i < this.fileRegister.length; i++) {
+			console.log(i);
+			addObjects2ObjectsBar(
+				this.storage[this.fileRegister[i]] [this.maxVersions[this.fileRegister[i]]].url, false);
+			this.activeVersion[this.fileRegister[i]] = this.maxVersions[this.fileRegister[i]];
+		}
+	},
+	
+	changeVersion : function (fileNO, vers) {
+		this.activeVersion[fileNO] = vers;
+	},
+};
+
 socket.on('connect', function() {
 	//init with clear of all?
 	console.log("connected");
@@ -50,10 +94,14 @@ socket.on("loadChatList", function (msg) {
 
 socket.on("loadObjectsBar", function (msg) {
 	clearObjectsBar();
+	fileControll.clear();
 	var objList = JSON.parse(msg);
 	for (var i = 0; i < objList.length; i++) {
-		//addObjects2ObjectsBar()
+		console.log(objList[i]);
+		fileControll.add(objList[i]);
+		//addObjects2ObjectsBar("test", false);
 	}
+	fileControll.render();
 });
 
 socket.on("recvPost", function(msg) {
@@ -75,7 +123,6 @@ socket.on("recvPost", function(msg) {
 
 socket.on("chkWritePerm", function (msg) {
 	writePerm = msg["writePerm"];
-	console.log(writePerm);
 	if (writePerm) {
 		post.classList.remove("hidden");
 	} else {
@@ -86,7 +133,6 @@ socket.on("chkWritePerm", function (msg) {
 
 socket.on("chkUploadPerm", function (msg) {
 	uploadPerm = msg["uploadPerm"];
-	console.log(uploadPerm);
 	if (uploadPerm) {
 		fileDropZoneObject.classList.remove("hidden");
 		fileDropZone.classList.remove("hidden");
@@ -99,7 +145,6 @@ socket.on("chkUploadPerm", function (msg) {
 
 socket.on("chkGrantPerm", function (msg) {
 	grantPerm = msg["grantPerm"];
-	console.log(grantPerm);
 	
 });
 

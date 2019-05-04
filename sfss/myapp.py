@@ -66,10 +66,16 @@ class chatNameSpace(Namespace):
 		chatEntries = getChatEntries(msg["chatId"])
 		for i in range(len(chatEntries)):
 			chatEntries[i]["ctime"] = format_datetime(chatEntries[i]["ctime"])
+		self.files = _getFiles(msg["chatId"])
+		for i in range(len(self.files)):
+			self.files[i]["mtime"] = format_datetime(self.files[i]["mtime"])
+			self.files[i]["url"] = url2name(self.files[i]["url"])
+		#print(self.files)
 		emit("loadChat", json.dumps(chatEntries))
 		emit("chkWritePerm", {"writePerm" : chkChatWritePerm(msg["chatId"])})
 		emit("chkUploadPerm", {"uploadPerm" : chkChatUploadPerm(msg["chatId"])})
 		emit("chkGrantPerm", {"grantPerm" : chkChatGrantPerm(msg["chatId"])})
+		emit("loadObjectsBar", json.dumps(self.files))
 		
 	
 	def on_chkWritePerm(self, msg):
@@ -280,7 +286,7 @@ def getGroups():
 	return query("SELECT groups FROM users where id = %s", (session["userID"]))[0]['groups'].split(",")
 
 def _getFiles(id):
-	return query("SELECT version, fileNO FROM files WHERE ChatID = %s",(id,)) #TODO: Complete!!!
+	return query("SELECT files.version, files.fileNO, users.username, files.mtime, files.comment, files.url FROM files INNER JOIN users ON files.owner=users.id WHERE ChatID = %s",(id,)) #TODO: Complete!!!
 
 
 ################################ filter ##########################################################
@@ -292,6 +298,9 @@ def format_datetime(value, format="%d.%b.%y, %H:%M"):
         return ""
     return value.strftime(format)
 
+@app.template_filter('url2name')
+def url2name(url):
+	return "".join(os.path.basename(url).split("_")[:-1])
 ##################################################################################################
 
 @app.route("/registerkey/<key>")
