@@ -42,6 +42,7 @@
 	word-break: break-all;
 	word-wrap: break-word;
 	vertical-align: middle;
+	font-size: 12px;
 }
 
 #workspace #objectsBar #UploadBar {

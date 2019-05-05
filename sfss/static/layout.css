@@ -32,6 +32,19 @@ dt {
 	overflow-x: hidden;
 }
 
+#preview #previewCloseButton {
+	text-align: right;
+	align-self: right;
+	float: right;
+}
+
+#previewFrame {
+	width: 100%;
+	height: 100%;
+	text-align: center;
+	font-size: 30px;
+}
+
 #wrapper {
 	width: 98%;
 	height: 100%;

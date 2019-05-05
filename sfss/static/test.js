@@ -10,6 +10,7 @@ var progressBar = document.getElementById("UploadBar");
 var fileDropZone = document.getElementById("dropFile");
 var postBar = document.getElementById("post");
 var fileDropZoneObject = document.getElementById("dropFileObject");
+var previewFrame = document.getElementById("previewFrame");
 var uploadQueue = [];
 var uploadSizes = [];
 var uploadTotalProceeds = [];
@@ -24,6 +25,7 @@ var fileControll = {
 	fileRegister : [],
 	maxVersions : {},
 	activeVersion : {},
+	activeFile : null,
 	add : function (fileObj) {
 			if (!this.storage.hasOwnProperty(fileObj["fileNO"])) {
 			   this.storage[fileObj["fileNO"]] = {};
@@ -53,13 +55,25 @@ var fileControll = {
 		for (var i = 0; i < this.fileRegister.length; i++) {
 			console.log(i);
 			addObjects2ObjectsBar(
-				this.storage[this.fileRegister[i]] [this.maxVersions[this.fileRegister[i]]].url, false);
+				this.storage[this.fileRegister[i]] [this.maxVersions[this.fileRegister[i]]].url,
+				false,
+				this.fileRegister[i]);
 			this.activeVersion[this.fileRegister[i]] = this.maxVersions[this.fileRegister[i]];
 		}
 	},
 	
-	changeVersion : function (fileNO, vers) {
+	changeVersion : function (fileNO, vers) { //later only for vers change!!!
 		this.activeVersion[fileNO] = vers;
+		previewFrame.data = "previews/"+this.storage[fileNO][vers].id;
+	},
+	
+	changeFile : function (fileNO) {
+		if (this.activeFile != null) {
+			this.activeFile.classList.remove("active");
+		}
+		previewFrame.data = "previews/"+this.storage[fileNO][this.maxVersions[fileNO]].id;
+		this.activeFile = document.getElementById("object"+fileNO);
+		this.activeFile.classList.add("active");
 	},
 };
 
@@ -103,6 +117,17 @@ socket.on("loadObjectsBar", function (msg) {
 	}
 	fileControll.render();
 });
+
+/*socket.on("loadObjectsBarChat", function(msg) {
+	var data = JSON.parse(msg);
+	objList = data["files"]
+	var objList = JSON.parse(msg);
+	for (var i = 0; i < objList.length; i++) {
+		console.log(objList[i]);
+		fileControll.add(objList[i]);
+		//addObjects2ObjectsBar("test", false);
+	}
+});*/
 
 socket.on("recvPost", function(msg) {
 	var chatEnriesJson = JSON.parse(msg);
@@ -254,10 +279,15 @@ function clearObjectsBar() {
 	//addObjects2ObjectsBar("+", false);
 }
 
-function addObjects2ObjectsBar(content, active) {
+function addObjects2ObjectsBar(content, active, fileNO) {
 	var obj = document.createElement("DIV");
 	obj.className = "object";
 	obj.innerHTML = content;
+	obj.setAttribute("fileNO", fileNO);
+	obj.setAttribute("id", "object"+fileNO);
+	obj.addEventListener("click", function (event) {
+		fileControll.changeFile(event.target.getAttribute("fileNO"));
+	});
 	
 	var objTab = document.createElement("DIV");
 	objTab.className = active ? "objectTab active" : "objectTab";

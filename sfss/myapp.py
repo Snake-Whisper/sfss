@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, render_template, request, session, escape, url_for, redirect, g, abort, flash, Markup
+from flask import Flask, render_template, request, session, escape, url_for, redirect, g, abort, flash, Markup, send_file
 import random
 import pymysql
 from flask_redis import FlaskRedis
@@ -28,7 +28,8 @@ app.config.update(
 	DATADIR = "/tmp"
 )
 socketio = SocketIO(app)
-chatdir = os.path.join(app.config["DATADIR"], "files")
+filedir = os.path.join(app.config["DATADIR"], "files")
+previewdir = os.path.join(app.config["DATADIR"], "previews")
 
 ############## socket section #################################
 
@@ -100,6 +101,7 @@ socketio.on_namespace(chatNameSpace("/chat"))
 		
 ##############################################################
 
+
 @app.route("/settings")
 def settings():
 	return redirect("/notImpl/settings")
@@ -129,8 +131,8 @@ def getRedis():
 	
 def getDBCursor():
 	if not hasattr(g, 'db'):
-		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
-		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
+		#g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="192.168.178.39")
+		g.db = pymysql.connect(user='sfss', password='QsbPu7N0kJ4ijyEf', db='sfss', cursorclass=pymysql.cursors.DictCursor, host="localhost")
 	return g.db.cursor()
 
 @app.teardown_appcontext
@@ -286,7 +288,7 @@ def getGroups():
 	return query("SELECT groups FROM users where id = %s", (session["userID"]))[0]['groups'].split(",")
 
 def _getFiles(id):
-	return query("SELECT files.version, files.fileNO, users.username, files.mtime, files.comment, files.url FROM files INNER JOIN users ON files.owner=users.id WHERE ChatID = %s",(id,)) #TODO: Complete!!!
+	return query("SELECT files.id, files.version, files.fileNO, users.username, files.mtime, files.comment, files.url FROM files INNER JOIN users ON files.owner=users.id WHERE ChatID = %s",(id,)) #TODO: Complete!!!
 
 
 ################################ filter ##########################################################
@@ -316,6 +318,14 @@ def registerKey(key):
 		return render_template("message.html", message="This Key doesn't exist. Remeber, you've only 10 Minutes to continue your registration")
 	
 
+def generatePreview(url):#outsource?
+	filename = url2name(url)
+	if os.path.splitext(filename)[-1] == ".pdf":
+		os.symlink(url, os.path.join(previewdir, os.path.basename(url)))
+	else:
+		print("could not generate preview")
+	
+
 @app.route("/")
 @login_required
 def home():
@@ -325,10 +335,40 @@ def home():
 def notImpl(item):
 	return "The requestet site or service {0} hasn't been implemented yet. So it's time to do it. You know?".format(item)
 
+@app.route("/files/<Id>")
+@login_required
+def sendFile(Id):
+	res = query("select url from files where id = %s", (Id,))
+	print(res)
+	if res:
+		file = res[0]["url"]
+		if os.path.isfile(file):
+			print("sending...")
+			return send_file(file, attachment_filename=url2name(file))
+	return send_file("/tmp/files/fritzAttack.pdf")#replace with file not found
+
+@app.route("/previews/<Id>")
+@login_required
+def sendPreview(Id):
+	res = query("select url from files where id = %s", (Id,))
+	if res:
+		filename = url2name(res[0]["url"])
+		file = os.path.join(previewdir, os.path.basename(res[0]["url"]))
+		if os.path.isfile(file):
+			print("sending...", file)
+			return send_file(file, attachment_filename=filename)
+		else:
+			print("file does not exist:", file)
+	else:
+		print("leere datensatz")
+	print(Id,"notfound")
+	#return send_file("/tmp/files/fritzAttack.pdf")#replace with file not found
+	return abort(500)
+
 @app.route("/upload", methods=["POST"])
 @login_required
 def upload():
-	global chatdir
+	global filedir
 	if not all([request.form["chatId"], chkChatUploadPerm(request.form["chatId"])]):
 		return abort(401)
 	if not "file" in request.files: #ToDO: Improve
@@ -336,9 +376,16 @@ def upload():
 		return abort(400)
 	file = request.files['file']
 	filename = "{0}_{1}".format(secure_filename(file.filename), int(time.time()*1000))
-	url = os.path.join(chatdir, filename)
+	url = os.path.join(filedir, filename)
 	file.save(url)
+	generatePreview(url)
 	_addFile(request.form["chatId"], session["userID"], url)
+	# use deltas!!! -> at the moment: REDUDANT.
+	#files = _getFiles(request.form["chatId"])
+	#for i in range(len(files)):
+	#		files[i]["mtime"] = format_datetime(files[i]["mtime"])
+	#		files[i]["url"] = url2name(files[i]["url"])
+	#emit("loadObjectsBarChat", json.dumps({"chatId" : request.form["chatId"], "files":files}), chatroom=request.form["chatId"])
 	print("saved:" + filename)
 	return "ok"
 
@@ -386,8 +433,8 @@ def initdb():
 @app.cli.command("randomFill") #changed auto time!!!
 def randomFill():
 	import os #dirty
-	#os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
-	os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	os.popen('mysql -u sfss -h localhost -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
+	#os.popen('mysql -u sfss -h 192.168.178.39 -pQsbPu7N0kJ4ijyEf -e "DROP DATABASE sfss; CREATE DATABASE sfss;"')
 	time.sleep(2)
 	c = getDBCursor()
 	with app.open_resource('schema.sql', mode='r') as f:		
